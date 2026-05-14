@@ -12,11 +12,11 @@ interface ClientLayoutProps {
 }
 
 const bottomNavItems = [
-  { href: "/", icon: Home, label: "首頁" },
+  { href: "/client/home", icon: Home, label: "首頁" },
   { href: "/search", icon: Search, label: "搜尋" },
-  { href: "/cart", icon: ShoppingCart, label: "購物車" },
-  { href: "/orders", icon: FileText, label: "訂單" },
-  { href: "/profile", icon: User, label: "我的" },
+  { href: "/client/cart", icon: ShoppingCart, label: "購物車" },
+  { href: "/client/orders", icon: FileText, label: "訂單" },
+  { href: "/client/profile", icon: User, label: "我的" },
 ];
 
 export function ClientLayout({ children, className }: ClientLayoutProps) {

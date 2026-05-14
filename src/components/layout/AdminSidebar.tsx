@@ -6,34 +6,27 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  BarChart3,
-  Settings,
   Users,
   Store,
-  FileText,
-  AlertTriangle,
-  Bell,
+  Settings,
+  Shield,
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { BrandConfig } from "@/config/brand";
 
 interface AdminSidebarProps {
   className?: string;
 }
 
 const navItems = [
-  { href: "/admin", icon: LayoutDashboard, label: "儀表板" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "儀表板" },
   { href: "/admin/merchants", icon: Store, label: "商家管理" },
   { href: "/admin/users", icon: Users, label: "用戶管理" },
   { href: "/admin/products", icon: Package, label: "商品審核" },
   { href: "/admin/orders", icon: ShoppingCart, label: "訂單管理" },
-  { href: "/admin/analytics", icon: BarChart3, label: "數據分析" },
-  { href: "/admin/reports", icon: FileText, label: "報表" },
-  { href: "/admin/alerts", icon: AlertTriangle, label: "預警" },
-  { href: "/admin/notifications", icon: Bell, label: "通知" },
-  { href: "/admin/settings", icon: Settings, label: "系統設定" },
 ];
 
 export function AdminSidebar({ className }: AdminSidebarProps) {
@@ -56,19 +49,19 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
           )}
         >
           {!collapsed && (
-            <Link href="/admin" className="flex items-center gap-2">
-              <Store className="w-6 h-6 text-[var(--accent)]" />
-              <span className="text-lg font-bold">Nordique</span>
+            <Link href="/admin/dashboard" className="flex items-center gap-2">
+              <Shield className="w-6 h-6 text-[var(--accent)]" />
+              <span className="text-lg font-bold">{BrandConfig.name}</span>
             </Link>
           )}
-          {collapsed && <Store className="w-6 h-6 text-[var(--accent)]" />}
+          {collapsed && <Shield className="w-6 h-6 text-[var(--accent)]" />}
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
+              (item.href !== "/admin/dashboard" && pathname.startsWith(item.href));
 
             return (
               <Link

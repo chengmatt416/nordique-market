@@ -14,13 +14,14 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { BrandConfig } from "@/config/brand";
 
 interface MerchantSidebarProps {
   className?: string;
 }
 
 const navItems = [
-  { href: "/merchant", icon: LayoutDashboard, label: "儀表板" },
+  { href: "/merchant/dashboard", icon: LayoutDashboard, label: "儀表板" },
   { href: "/merchant/products", icon: Package, label: "商品管理" },
   { href: "/merchant/orders", icon: ShoppingCart, label: "訂單管理" },
   { href: "/merchant/analytics", icon: BarChart3, label: "數據分析" },
@@ -47,10 +48,10 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
           )}
         >
           {!collapsed && (
-            <Link href="/merchant" className="flex items-center gap-2">
+            <Link href="/merchant/dashboard" className="flex items-center gap-2">
               <Store className="w-6 h-6 text-[var(--accent)]" />
               <span className="text-lg font-bold text-[var(--primary)]">
-                Nordique
+                {BrandConfig.name}
               </span>
             </Link>
           )}
@@ -61,7 +62,7 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/merchant" && pathname.startsWith(item.href));
+              (item.href !== "/merchant/dashboard" && pathname.startsWith(item.href));
 
             return (
               <Link
