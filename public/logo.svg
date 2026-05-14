@@ -1,0 +1,11 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="auraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8B4B8"/>
+      <stop offset="100%" stop-color="#A8D8EA"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="30" font-family="Inter, sans-serif" font-size="24" font-weight="700" fill="#1A1A2E">AURA</text>
+  <circle cx="105" cy="20" r="8" fill="url(#auraGradient)" opacity="0.6"/>
+  <circle cx="108" cy="18" r="4" fill="url(#auraGradient)"/>
+</svg>
