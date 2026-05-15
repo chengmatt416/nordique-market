@@ -143,24 +143,34 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [countdown] = useState({ h: 11, m: 59, s: 59 });
+  const [flashSale, setFlashSale] = useState<{ active: boolean; title: string; subtitle: string; endTime: string } | null>(null);
+  const [merchantEnabled, setMerchantEnabled] = useState(true);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch('/api/products');
-        if (!res.ok) {
-          if (res.status === 503) {
-            setError('firebase_not_configured');
-          } else {
-            setError('fetch_failed');
-          }
-          setLoading(false);
-          return;
+        const [prodRes, brandRes] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/brand'),
+        ]);
+        if (prodRes.ok) {
+          const data = await prodRes.json();
+          const raw = data.products || [];
+          setProducts(Array.isArray(raw) ? raw.map((p: any) => p._e ? deobfuscateProduct(p) : p) : []);
+        } else if (prodRes.status === 503) {
+          setError('firebase_not_configured');
+        } else {
+          setError('fetch_failed');
         }
-        const data = await res.json();
-        const raw = data.products || [];
-        setProducts(Array.isArray(raw) ? raw.map((p: any) => p._e ? deobfuscateProduct(p) : p) : []);
+        if (brandRes.ok) {
+          const brand = await brandRes.json();
+          if (brand?.flashSale?.active) {
+            setFlashSale(brand.flashSale);
+          }
+          if (brand.merchantSignupEnabled !== undefined) {
+            setMerchantEnabled(brand.merchantSignupEnabled === 'true');
+          }
+        }
       } catch {
         setError('fetch_failed');
       } finally {
@@ -198,11 +208,13 @@ export default function HomePage() {
                   開始選購
                 </Button>
               </Link>
+              {merchantEnabled && (
               <Link href="/auth/signin">
                 <Button variant="outline" className="border border-white/30 text-white hover:bg-white hover:text-indigo-600">
                   開店當老闆
                 </Button>
               </Link>
+              )}
             </div>
           </div>
         </section>
@@ -238,6 +250,7 @@ export default function HomePage() {
           </div>
         </section>
 
+        {flashSale?.active && (
         <Card padding="md" className="bg-pink-50 border-pink-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -246,30 +259,20 @@ export default function HomePage() {
               </div>
               <div>
                 <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                  限時閃購
-                  <Badge variant="error" className="text-xs">只剩 12 小時</Badge>
+                  {flashSale.title || '限時閃購'}
+                  <Badge variant="error" className="text-xs">限時優惠</Badge>
                 </h3>
-                <p className="text-sm text-gray-500">精選商品最低 5 折起</p>
+                <p className="text-sm text-gray-500">{flashSale.subtitle || ''}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex gap-1">
-                {[
-                  String(countdown.h).padStart(2, '0'),
-                  String(countdown.m).padStart(2, '0'),
-                  String(countdown.s).padStart(2, '0'),
-                ].map((t, i) => (
-                  <span key={i} className="bg-gray-900 text-white px-3 py-2 rounded-lg font-mono font-bold text-lg min-w-[48px] text-center">
-                    {t}
-                  </span>
-                ))}
-              </div>
               <Link href="/search">
                 <Button size="sm">搶購</Button>
               </Link>
             </div>
           </div>
         </Card>
+        )}
 
         {error === 'firebase_not_configured' && (
           <section>

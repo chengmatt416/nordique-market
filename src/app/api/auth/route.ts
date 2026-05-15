@@ -20,6 +20,22 @@ export async function POST(request: NextRequest) {
     const uid = decodedToken.uid;
     const email = decodedToken.email;
 
+    const existingDoc = await db.collection('users').doc(uid).get();
+    if (existingDoc.exists) {
+      const existing = existingDoc.data()!;
+      await db.collection('users').doc(uid).update({
+        name: name || existing.name || decodedToken.name || '',
+        photoURL: photoURL || existing.photoURL || decodedToken.picture || '',
+        lastLoginAt: FieldValue.serverTimestamp(),
+      });
+      return NextResponse.json({
+        success: true,
+        uid,
+        role: existing.role || 'customer',
+        existing: true,
+      });
+    }
+
     const finalRole = role || 'customer';
 
     if (finalRole === 'admin' && !isAdminEmail(email)) {
@@ -37,12 +53,13 @@ export async function POST(request: NextRequest) {
       onboardingCompleted: false,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
-    }, { merge: true });
+    });
 
     return NextResponse.json({
       success: true,
       uid,
       role: finalRole,
+      existing: false,
     });
   } catch (error) {
     console.error('Error in auth:', error);

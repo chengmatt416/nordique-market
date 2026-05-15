@@ -2,6 +2,7 @@
 
 import { motion, Variants } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import {
   Shield,
   Truck,
@@ -45,6 +46,19 @@ const categories = [
 ];
 
 export default function LandingPage() {
+  const [merchantEnabled, setMerchantEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/brand')
+      .then(r => r.json())
+      .then(data => {
+        if (data && !data.error && data.merchantSignupEnabled !== undefined) {
+          setMerchantEnabled(data.merchantSignupEnabled === 'true');
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -69,11 +83,13 @@ export default function LandingPage() {
             >
               登入
             </Link>
+            {merchantEnabled && (
             <Link href="/auth/signin">
               <Button variant="primary" size="sm" className="rounded-lg">
                 開始銷售
               </Button>
             </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -112,11 +128,13 @@ export default function LandingPage() {
                 開始選購
               </Button>
             </Link>
+            {merchantEnabled && (
             <Link href="/auth/signin">
               <Button variant="outline" size="lg" className="rounded-lg">
                 商家入駐
               </Button>
             </Link>
+            )}
           </motion.div>
         </motion.div>
       </section>

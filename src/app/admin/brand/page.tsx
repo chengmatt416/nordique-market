@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button, Card, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { motion } from 'framer-motion';
-import { Save, RefreshCw, Plus, Trash2 } from 'lucide-react';
+import { Save, RefreshCw, Plus, Trash2, Clock } from 'lucide-react';
 
 interface BrandSettings {
   name: string;
@@ -25,6 +25,8 @@ interface BrandSettings {
   privacyContent: string;
   termsContent: string;
   contactExtraInfo: string;
+  flashSale: string;
+  merchantSignupEnabled: string;
 }
 
 interface FAQItem {
@@ -55,6 +57,8 @@ const defaultSettings: BrandSettings = {
   privacyContent: '[]',
   termsContent: '[]',
   contactExtraInfo: '',
+  flashSale: '{"active":false,"title":"","subtitle":"","endTime":""}',
+  merchantSignupEnabled: 'true',
 };
 
 function safeParseJSON<T>(json: string, fallback: T): T {
@@ -76,6 +80,7 @@ export default function BrandManagerPage() {
   const [faqItems, setFaqItems] = useState<FAQItem[]>([]);
   const [privacySections, setPrivacySections] = useState<ContentSection[]>([]);
   const [termsSections, setTermsSections] = useState<ContentSection[]>([]);
+  const [flashSale, setFlashSale] = useState({ active: false, title: '', subtitle: '', endTime: '' });
 
   useEffect(() => {
     fetch('/api/brand')
@@ -87,6 +92,10 @@ export default function BrandManagerPage() {
           setFaqItems(safeParseJSON<FAQItem[]>(merged.helpContent, []));
           setPrivacySections(safeParseJSON<ContentSection[]>(merged.privacyContent, []));
           setTermsSections(safeParseJSON<ContentSection[]>(merged.termsContent, []));
+          try {
+            const fs = JSON.parse(merged.flashSale || '{}');
+            if (fs && typeof fs === 'object') setFlashSale(fs);
+          } catch {}
         }
       })
       .catch(() => {})
@@ -111,7 +120,7 @@ export default function BrandManagerPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const payload = { ...settings };
+      const payload = { ...settings, flashSale: JSON.stringify(flashSale) };
       delete (payload as any).features;
       delete (payload as any).categories;
       const res = await fetch('/api/brand', {
@@ -489,6 +498,62 @@ export default function BrandManagerPage() {
                 ))}
               </div>
             )}
+          </Card>
+
+          <Card padding="md">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5 text-pink-400" />
+              <h2 className="text-lg font-semibold">限時閃購設定</h2>
+            </div>
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={flashSale.active}
+                  onChange={(e) => setFlashSale(prev => ({ ...prev, active: e.target.checked }))}
+                  className="w-4 h-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                />
+                <span className="text-sm font-medium text-gray-900">啟用限時閃購</span>
+              </label>
+              {flashSale.active && (
+                <div className="space-y-3 pl-7">
+                  <Input
+                    label="標題"
+                    value={flashSale.title}
+                    onChange={(e) => setFlashSale(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="限時閃購"
+                  />
+                  <Input
+                    label="副標題"
+                    value={flashSale.subtitle}
+                    onChange={(e) => setFlashSale(prev => ({ ...prev, subtitle: e.target.value }))}
+                    placeholder="精選商品最低 5 折起"
+                  />
+                  <Input
+                    label="結束時間"
+                    type="datetime-local"
+                    value={flashSale.endTime}
+                    onChange={(e) => setFlashSale(prev => ({ ...prev, endTime: e.target.value }))}
+                  />
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card padding="md">
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-lg font-semibold">商家入駐設定</h2>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.merchantSignupEnabled === 'true'}
+                onChange={(e) => update('merchantSignupEnabled', e.target.checked ? 'true' : 'false')}
+                className="w-4 h-4 rounded border-gray-300 text-indigo-500 focus:ring-indigo-500"
+              />
+              <span className="text-sm font-medium text-gray-900">啟用商家入駐（顯示「開始銷售」及「商家入駐」按鈕）</span>
+            </label>
+            <p className="text-xs text-gray-400 mt-2 ml-7">關閉後，「開始銷售」、「商家入駐」、「開店當老闆」按鈕將不會顯示在前台頁面</p>
           </Card>
 
           <div className="flex gap-3">

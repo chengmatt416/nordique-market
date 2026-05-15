@@ -36,11 +36,19 @@ export default function SignInPage() {
         showToast('登入成功！', 'success');
         const role = data.role || 'customer';
 
-        switch (role) {
-          case 'customer': router.push('/client/home'); break;
-          case 'merchant': router.push('/merchant/dashboard'); break;
-          case 'admin': router.push('/admin/dashboard'); break;
-          default: router.push('/onboarding/customer');
+        if (data.existing) {
+          switch (role) {
+            case 'customer': router.push('/client/home'); break;
+            case 'merchant': router.push('/merchant/dashboard'); break;
+            case 'admin': router.push('/admin/dashboard'); break;
+            default: router.push('/client/home');
+          }
+        } else {
+          switch (role) {
+            case 'merchant': router.push('/onboarding/merchant'); break;
+            case 'admin': router.push('/onboarding/admin'); break;
+            default: router.push('/onboarding/customer');
+          }
         }
       } catch {
         // New user — redirect to onboarding
