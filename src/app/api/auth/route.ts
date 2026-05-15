@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const finalRole = role || 'customer';
+    const finalRole = isAdminEmail(email) ? 'admin' : (role || 'customer');
 
     if (finalRole === 'admin' && !isAdminEmail(email)) {
       return NextResponse.json({ error: 'Unauthorized: admin access restricted' }, { status: 403 });
