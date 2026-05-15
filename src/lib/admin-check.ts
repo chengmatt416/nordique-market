@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
 
-const ADMIN_EMAIL = 'pinyen.no2fa@gmail.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'pinyen.no2fa@gmail.com';
 
 export function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false;
