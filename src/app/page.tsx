@@ -197,15 +197,9 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="py-20 px-6 bg-gray-900">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-8">
             {brandName} 為您服務
           </h2>
-          <p className="text-gray-400 max-w-lg mx-auto mb-2">
-            超過 50,000+ 位滿意顧客
-          </p>
-          <p className="text-gray-400 max-w-lg mx-auto mb-8">
-            200+ 家優質商家，5,000+ 件精選商品
-          </p>
           <Link href="/search">
             <Button
               size="lg"

@@ -68,8 +68,15 @@ export async function POST(request: NextRequest) {
       existing: false,
     });
   } catch (error) {
-    console.error('Error in auth:', error);
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    console.error('POST /api/auth error:', detail);
+    if (detail.includes('Credential implementation') || detail.includes('private key') || detail.includes('ServiceAccount')) {
+      return NextResponse.json({ error: 'Firebase Admin SDK credentials are invalid. Check FIREBASE_PRIVATE_KEY in .env.local' }, { status: 500 });
+    }
+    if (detail.includes('Invalid Id Token') || detail.includes('token')) {
+      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'Authentication failed: ' + detail }, { status: 500 });
   }
 }
 

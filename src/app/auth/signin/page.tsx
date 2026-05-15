@@ -33,13 +33,14 @@ export default function SignInPage() {
           photoURL: user.photoURL || '',
         });
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : '';
-        if (msg.includes('not configured') || msg.includes('Firebase')) {
+        const msg = err instanceof Error ? err.message : '未知錯誤';
+        console.error('[Login Error]', msg);
+        if (msg.includes('not configured') || msg.includes('Firebase') || msg.includes('fetch')) {
           showToast('Firebase 尚未設定，請先完成設定', 'error');
           router.push('/firebase-setup');
           return;
         }
-        showToast('登入失敗，請稍後再試', 'error');
+        showToast(`登入失敗: ${msg}`, 'error');
         return;
       }
 
