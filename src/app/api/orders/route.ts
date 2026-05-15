@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+
+const FIREBASE_NOT_CONFIGURED = NextResponse.json(
+  { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
+  { status: 503 }
+);
 
 export async function GET(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
     const merchantId = searchParams.get('merchantId');
@@ -36,10 +43,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const body = await request.json();
     const db = getAdminDb();
     const orderRef = db.collection('orders').doc();
-    
+
     await orderRef.set({
       ...body,
       status: 'pending',
@@ -56,15 +65,17 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const body = await request.json();
     const { id, status, trackingNumber, ...data } = body;
-    
+
     const db = getAdminDb();
     const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: FieldValue.serverTimestamp(),
     };
-    
+
     if (status) updateData.status = status;
     if (trackingNumber) updateData.trackingNumber = trackingNumber;
 

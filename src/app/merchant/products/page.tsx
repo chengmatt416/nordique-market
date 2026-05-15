@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MerchantLayout } from '@/components/layout/MerchantLayout';
 import { Card, Badge, Button, Input, Modal } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Search, Edit, Trash2, ImageIcon } from 'lucide-react';
+import Link from 'next/link';
+
+const MERCHANT_ID = 'xxx';
 
 type ProductStatus = 'active' | 'inactive' | 'pending';
 
@@ -20,97 +22,6 @@ interface Product {
   status: ProductStatus;
   image: string;
 }
-
-const initialProducts: Product[] = [
-  {
-    id: '1',
-    name: '北歐簡約大理石時鐘',
-    description: '採用進口白色大理石，線條簡潔優雅，適合現代家居風格',
-    category: '時鐘',
-    price: 2880,
-    originalPrice: 3500,
-    stock: 15,
-    status: 'active',
-    image: 'clock-1',
-  },
-  {
-    id: '2',
-    name: '實木書架',
-    description: '北美進口白橡木，保留自然紋理，簡約北歐設計',
-    category: '家具',
-    price: 5600,
-    originalPrice: 6800,
-    stock: 8,
-    status: 'active',
-    image: 'shelf-1',
-  },
-  {
-    id: '3',
-    name: '羊毛北歐地毯',
-    description: '100%純羊毛編織，柔軟舒適，圖案優雅大方',
-    category: '地毯',
-    price: 4200,
-    originalPrice: 5000,
-    stock: 0,
-    status: 'inactive',
-    image: 'rug-1',
-  },
-  {
-    id: '4',
-    name: '設計師款陶瓷花瓶',
-    description: '手工製作的藝術陶瓷，啞光質感，自然色澤',
-    category: '裝飾品',
-    price: 1280,
-    originalPrice: 1500,
-    stock: 23,
-    status: 'pending',
-    image: 'vase-1',
-  },
-  {
-    id: '5',
-    name: 'LED北歐壁燈',
-    description: '暖白光LED光源，金屬與木材結合，營造溫馨氛圍',
-    category: '燈具',
-    price: 1980,
-    originalPrice: 2400,
-    stock: 12,
-    status: 'active',
-    image: 'lamp-1',
-  },
-  {
-    id: '6',
-    name: '極簡皮革扶手椅',
-    description: '頭層牛皮搭配實木框架，人體工學設計',
-    category: '家具',
-    price: 12800,
-    originalPrice: 15000,
-    stock: 3,
-    status: 'active',
-    image: 'chair-1',
-  },
-  {
-    id: '7',
-    name: '木質收納盒套裝',
-    description: '實木與布藝結合，多功能收納整理',
-    category: '收納',
-    price: 880,
-    originalPrice: 1100,
-    stock: 30,
-    status: 'inactive',
-    image: 'box-1',
-  },
-  {
-    id: '8',
-    name: '創意幾何掛鉤組',
-    description: '黃銅材質，幾何造型，方便實用又美觀',
-    category: '五金配件',
-    price: 560,
-    originalPrice: 700,
-    stock: 45,
-    status: 'pending',
-    image: 'hook-1',
-  },
-];
 
 const categories = ['時鐘', '家具', '地毯', '裝飾品', '燈具', '收納', '五金配件'];
 
@@ -131,7 +42,9 @@ type FilterStatus = 'all' | ProductStatus;
 const ITEMS_PER_PAGE = 5;
 
 export default function MerchantProductsPage() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -139,6 +52,8 @@ export default function MerchantProductsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -149,6 +64,36 @@ export default function MerchantProductsPage() {
     stock: '',
     image: '',
   });
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  async function fetchProducts() {
+    try {
+      setLoading(true);
+      setError(false);
+      const res = await fetch(`/api/products?merchantId=${MERCHANT_ID}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      const list: Product[] = (data.products || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description || '',
+        category: p.category || '',
+        price: p.price || 0,
+        originalPrice: p.originalPrice || p.price || 0,
+        stock: p.stock ?? 0,
+        status: p.status || 'pending',
+        image: p.image || '',
+      }));
+      setProducts(list);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -194,29 +139,47 @@ export default function MerchantProductsPage() {
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     if (!formData.name || !formData.price || !formData.stock) return;
 
-    const newProduct: Product = {
-      id: editingProduct?.id || Date.now().toString(),
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      price: parseInt(formData.price),
-      originalPrice: parseInt(formData.originalPrice) || parseInt(formData.price),
-      stock: parseInt(formData.stock),
-      status: editingProduct?.status || 'pending',
-      image: formData.image || `product-${Date.now()}`,
-    };
+    setSaving(true);
+    try {
+      const body = {
+        merchantId: MERCHANT_ID,
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        price: parseInt(formData.price),
+        originalPrice: parseInt(formData.originalPrice) || parseInt(formData.price),
+        stock: parseInt(formData.stock),
+        status: editingProduct?.status || 'pending',
+        image: formData.image || `product-${Date.now()}`,
+      };
 
-    if (editingProduct) {
-      setProducts(products.map((p) => (p.id === editingProduct.id ? newProduct : p)));
-    } else {
-      setProducts([newProduct, ...products]);
+      if (editingProduct) {
+        const res = await fetch('/api/products', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingProduct.id, ...body }),
+        });
+        if (!res.ok) throw new Error('Failed to update');
+      } else {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error('Failed to create');
+      }
+
+      await fetchProducts();
+      setIsProductModalOpen(false);
+      resetForm();
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
     }
-
-    setIsProductModalOpen(false);
-    resetForm();
   };
 
   const openDeleteModal = (product: Product) => {
@@ -224,12 +187,23 @@ export default function MerchantProductsPage() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteProduct = () => {
-    if (productToDelete) {
-      setProducts(products.filter((p) => p.id !== productToDelete.id));
+  const handleDeleteProduct = async () => {
+    if (!productToDelete) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/products?id=${productToDelete.id}&merchantId=${MERCHANT_ID}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      await fetchProducts();
+      setIsDeleteModalOpen(false);
+      setProductToDelete(null);
+    } catch {
+      setError(true);
+    } finally {
+      setDeleting(false);
     }
-    setIsDeleteModalOpen(false);
-    setProductToDelete(null);
   };
 
   return (
@@ -243,175 +217,168 @@ export default function MerchantProductsPage() {
           </Button>
         </div>
 
-        <Card className="mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 p-4">
-            <div className="flex-1">
-              <Input
-                placeholder="搜尋商品..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                icon={<Search className="w-4 h-4" />}
-              />
-            </div>
-            <div className="flex gap-2">
-              {(['all', 'active', 'inactive', 'pending'] as FilterStatus[]).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => {
-                    setFilterStatus(status);
-                    setCurrentPage(1);
-                  }}
-                  className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-colors',
-                    filterStatus === status
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-200'
-                  )}
-                >
-                  {status === 'all' ? '全部' : statusLabels[status as ProductStatus]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Card>
+        {loading && (
+          <Card className="mb-6 p-8 text-center text-gray-400">載入中...</Card>
+        )}
 
-        <Card padding="none">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left p-4 text-sm font-medium text-gray-600">
-                    商品
-                  </th>
-                  <th className="text-left p-4 text-sm font-medium text-gray-600">
-                    分類
-                  </th>
-                  <th className="text-right p-4 text-sm font-medium text-gray-600">
-                    價格
-                  </th>
-                  <th className="text-right p-4 text-sm font-medium text-gray-600">
-                    庫存
-                  </th>
-                  <th className="text-center p-4 text-sm font-medium text-gray-600">
-                    狀態
-                  </th>
-                  <th className="text-right p-4 text-sm font-medium text-gray-600">
-                    操作
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedProducts.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center p-8 text-gray-400">
-                      找不到商品
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedProducts.map((product) => (
-                    <tr
-                      key={product.id}
-                      className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors"
+        {error && (
+          <Card className="mb-6 p-8 text-center text-gray-500">無法載入商品</Card>
+        )}
+
+        {!loading && !error && products.length === 0 && (
+          <Card className="mb-6 p-12 text-center">
+            <p className="text-gray-500 mb-4">尚無商品，立即新增</p>
+            <Link href="#" onClick={(e) => { e.preventDefault(); openAddModal(); }}>
+              <Button>
+                <Plus className="w-4 h-4" /> 新增商品
+              </Button>
+            </Link>
+          </Card>
+        )}
+
+        {!loading && !error && products.length > 0 && (
+          <>
+            <Card className="mb-6">
+              <div className="flex flex-col sm:flex-row gap-4 p-4">
+                <div className="flex-1">
+                  <Input
+                    placeholder="搜尋商品..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    icon={<Search className="w-4 h-4" />}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  {(['all', 'active', 'inactive', 'pending'] as FilterStatus[]).map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => {
+                        setFilterStatus(status);
+                        setCurrentPage(1);
+                      }}
+                      className={cn(
+                        'px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                        filterStatus === status
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-50 text-gray-600 hover:bg-gray-200'
+                      )}
                     >
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-50 flex-shrink-0">
-                            <img
-                              src={`https://picsum.photos/seed/${product.image}/100/100`}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{product.name}</p>
-                            <p className="text-sm text-gray-400 line-clamp-1 max-w-xs">
-                              {product.description}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-gray-600">{product.category}</td>
-                      <td className="p-4 text-right">
-                        <p className="font-medium text-gray-900">
-                          {formatPrice(product.price)}
-                        </p>
-                        {product.originalPrice > product.price && (
-                          <p className="text-sm text-gray-400 line-through">
-                            {formatPrice(product.originalPrice)}
-                          </p>
-                        )}
-                      </td>
-                      <td className="p-4 text-right">
-                        <span
-                          className={cn(
-                            'font-medium',
-                            product.stock === 0
-                              ? 'text-red-500'
-                              : product.stock < 5
-                              ? 'text-amber-500'
-                              : 'text-gray-900'
-                          )}
-                        >
-                          {product.stock}
-                        </span>
-                      </td>
-                      <td className="p-4 text-center">
-                        <Badge variant={statusBadgeVariant[product.status]}>
-                          {statusLabels[product.status]}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditModal(product)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openDeleteModal(product)}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                      {status === 'all' ? '全部' : statusLabels[status as ProductStatus]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                上一頁
-              </Button>
-              <span className="text-sm text-gray-600">
-                第 {currentPage} / {totalPages} 頁
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                下一頁
-              </Button>
-            </div>
-          )}
-        </Card>
+            <Card padding="none">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left p-4 text-sm font-medium text-gray-600">商品</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-600">分類</th>
+                      <th className="text-right p-4 text-sm font-medium text-gray-600">價格</th>
+                      <th className="text-right p-4 text-sm font-medium text-gray-600">庫存</th>
+                      <th className="text-center p-4 text-sm font-medium text-gray-600">狀態</th>
+                      <th className="text-right p-4 text-sm font-medium text-gray-600">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedProducts.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center p-8 text-gray-400">找不到商品</td>
+                      </tr>
+                    ) : (
+                      paginatedProducts.map((product) => (
+                        <tr
+                          key={product.id}
+                          className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors"
+                        >
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-50 flex-shrink-0">
+                                <img
+                                  src={`https://picsum.photos/seed/${product.image}/100/100`}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{product.name}</p>
+                                <p className="text-sm text-gray-400 line-clamp-1 max-w-xs">{product.description}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4 text-sm text-gray-600">{product.category}</td>
+                          <td className="p-4 text-right">
+                            <p className="font-medium text-gray-900">{formatPrice(product.price)}</p>
+                            {product.originalPrice > product.price && (
+                              <p className="text-sm text-gray-400 line-through">{formatPrice(product.originalPrice)}</p>
+                            )}
+                          </td>
+                          <td className="p-4 text-right">
+                            <span
+                              className={cn(
+                                'font-medium',
+                                product.stock === 0
+                                  ? 'text-red-500'
+                                  : product.stock < 5
+                                  ? 'text-amber-500'
+                                  : 'text-gray-900'
+                              )}
+                            >
+                              {product.stock}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <Badge variant={statusBadgeVariant[product.status]}>
+                              {statusLabels[product.status]}
+                            </Badge>
+                          </td>
+                          <td className="p-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => openEditModal(product)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => openDeleteModal(product)}>
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                  >
+                    上一頁
+                  </Button>
+                  <span className="text-sm text-gray-600">第 {currentPage} / {totalPages} 頁</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    下一頁
+                  </Button>
+                </div>
+              )}
+            </Card>
+          </>
+        )}
 
         <Modal
           isOpen={isProductModalOpen}
@@ -474,9 +441,7 @@ export default function MerchantProductsPage() {
                   )}
                 >
                   {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
+                    <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
               </div>
@@ -508,8 +473,8 @@ export default function MerchantProductsPage() {
               <Button variant="outline" className="flex-1" onClick={() => setIsProductModalOpen(false)}>
                 取消
               </Button>
-              <Button className="flex-1" onClick={handleSaveProduct}>
-                儲存
+              <Button className="flex-1" onClick={handleSaveProduct} disabled={saving}>
+                {saving ? '儲存中...' : '儲存'}
               </Button>
             </div>
           </div>
@@ -530,8 +495,8 @@ export default function MerchantProductsPage() {
               <Button variant="outline" className="flex-1" onClick={() => setIsDeleteModalOpen(false)}>
                 取消
               </Button>
-              <Button className="flex-1" onClick={handleDeleteProduct}>
-                刪除
+              <Button className="flex-1" onClick={handleDeleteProduct} disabled={deleting}>
+                {deleting ? '刪除中...' : '刪除'}
               </Button>
             </div>
           </div>

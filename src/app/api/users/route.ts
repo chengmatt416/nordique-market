@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
+
+const FIREBASE_NOT_CONFIGURED = NextResponse.json(
+  { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
+  { status: 503 }
+);
 
 export async function GET() {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const auth = getAdminAuth();
     const users: { uid: string; email: string; displayName: string; photoURL: string; customClaims: { role?: string } }[] = [];
     const listUsersResult = await auth.listUsers(100);
-    
+
     for (const user of listUsersResult.users) {
       users.push({
         uid: user.uid,
@@ -26,6 +33,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const body = await request.json();
     const { uid, role } = body;
 
@@ -41,6 +50,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const { searchParams } = new URL(request.url);
     const uid = searchParams.get('uid');
 

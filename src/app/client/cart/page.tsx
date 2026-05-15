@@ -17,13 +17,6 @@ interface CartItem {
   merchantId: number;
 }
 
-const sampleItems: CartItem[] = [
-  { id: 1, name: '極簡實木書桌', variant: '胡桃木色 / 120cm', price: 4200, image: 101, quantity: 1, merchant: 'Nordique 北歐家居', merchantId: 1 },
-  { id: 2, name: '北歐風落地燈', variant: '啞光黑', price: 2600, image: 103, quantity: 2, merchant: 'Nordique 北歐家居', merchantId: 1 },
-  { id: 3, name: '亞麻寬版襯衫', variant: '米白色 / L', price: 1580, image: 105, quantity: 1, merchant: 'Linen House 亞麻之家', merchantId: 2 },
-  { id: 4, name: '藍牙降噪耳機 Pro', variant: '午夜藍', price: 3290, image: 106, quantity: 1, merchant: 'TechVibe 科技潮流', merchantId: 3 },
-];
-
 function groupByMerchant(items: CartItem[]) {
   const map = new Map<number, { merchant: string; merchantId: number; items: CartItem[] }>();
   for (const item of items) {
@@ -36,8 +29,8 @@ function groupByMerchant(items: CartItem[]) {
 }
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>(sampleItems);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set(sampleItems.map((i) => i.id)));
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [couponCode, setCouponCode] = useState('');
 
   const updateQuantity = (id: number, delta: number) => {
@@ -84,13 +77,12 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <ClientLayout>
-        <h1 className="text-xl font-bold text-gray-900 mb-6">購物車</h1>
         <div className="flex flex-col items-center justify-center py-20">
           <ShoppingBag className="w-20 h-20 text-gray-300 mb-6" />
           <h2 className="text-lg font-medium text-gray-900 mb-2">您的購物車是空的</h2>
           <p className="text-sm text-gray-500 mb-8">快去挑選喜歡的商品吧！</p>
           <Link href="/search">
-            <Button size="lg">開始購物</Button>
+            <Button size="lg">開始選購</Button>
           </Link>
         </div>
       </ClientLayout>

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card, Badge } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
@@ -19,140 +19,14 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  orderNumber: string;
-  date: string;
-  status: OrderStatus;
-  merchantName: string;
+  customerId: string;
+  merchantId: string;
   items: OrderItem[];
-  total: number;
+  totalAmount: number;
+  status: OrderStatus;
+  createdAt: string;
+  merchantName: string;
 }
-
-const orders: Order[] = [
-  {
-    id: '1',
-    orderNumber: 'AURA-2024-001234',
-    date: '2024-01-15T10:30:00',
-    status: 'pending_payment',
-    merchantName: '北歐家居館',
-    items: [
-      {
-        id: '1',
-        name: '北歐簡約陶瓷花瓶',
-        variantName: '米白色 / 中型',
-        price: 1280,
-        quantity: 1,
-        image: 'vase-1',
-      },
-    ],
-    total: 1340,
-  },
-  {
-    id: '2',
-    orderNumber: 'AURA-2024-001235',
-    date: '2024-01-14T15:20:00',
-    status: 'pending_ship',
-    merchantName: '設計師工坊',
-    items: [
-      {
-        id: '2',
-        name: '極簡木質時鐘',
-        variantName: '胡桃木色',
-        price: 980,
-        quantity: 1,
-        image: 'clock-1',
-      },
-      {
-        id: '3',
-        name: '創意壁掛收納架',
-        variantName: '淺木色',
-        price: 1680,
-        quantity: 1,
-        image: 'shelf-1',
-      },
-    ],
-    total: 2720,
-  },
-  {
-    id: '3',
-    orderNumber: 'AURA-2024-001236',
-    date: '2024-01-12T09:15:00',
-    status: 'shipped',
-    merchantName: '質感生活',
-    items: [
-      {
-        id: '4',
-        name: '純棉舒眠枕頭套',
-        variantName: '白色 / 標準尺寸',
-        price: 580,
-        quantity: 2,
-        image: 'pillow-1',
-      },
-    ],
-    total: 1220,
-  },
-  {
-    id: '4',
-    orderNumber: 'AURA-2024-001237',
-    date: '2024-01-10T14:45:00',
-    status: 'completed',
-    merchantName: '北歐家居館',
-    items: [
-      {
-        id: '5',
-        name: '手工羊毛針織毯',
-        variantName: '淺灰色',
-        price: 2480,
-        quantity: 1,
-        image: 'blanket-1',
-      },
-      {
-        id: '6',
-        name: '北歐簡約陶瓷花瓶',
-        variantName: '米白色 / 小型',
-        price: 880,
-        quantity: 1,
-        image: 'vase-2',
-      },
-    ],
-    total: 3520,
-  },
-  {
-    id: '5',
-    orderNumber: 'AURA-2024-001238',
-    date: '2024-01-08T11:00:00',
-    status: 'completed',
-    merchantName: '設計師工坊',
-    items: [
-      {
-        id: '7',
-        name: '實木簡約書桌',
-        variantName: '胡桃木色 / 120cm',
-        price: 5800,
-        quantity: 1,
-        image: 'desk-1',
-      },
-    ],
-    total: 5860,
-  },
-  {
-    id: '6',
-    orderNumber: 'AURA-2024-001239',
-    date: '2024-01-05T16:30:00',
-    status: 'cancelled',
-    merchantName: '質感生活',
-    items: [
-      {
-        id: '8',
-        name: '抗菌防螨床墊',
-        variantName: '標準雙人',
-        price: 4200,
-        quantity: 1,
-        image: 'mattress-1',
-      },
-    ],
-    total: 4260,
-  },
-];
 
 type StatusVariant = 'warning' | 'accent' | 'default' | 'success' | 'error';
 
@@ -173,8 +47,30 @@ const tabs = [
 ];
 
 function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/orders?customerId=current');
+      if (!res.ok) throw new Error('Failed to fetch orders');
+      const data = await res.json();
+      setOrders(data.orders || data);
+    } catch {
+      setError('無法載入訂單');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const filteredOrders =
     activeTab === 'all'
@@ -225,150 +121,165 @@ function OrdersPage() {
           ))}
         </div>
 
-        <AnimatePresence mode="wait">
-          {filteredOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20">
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.4 }}
-                className="w-32 h-32 rounded-full bg-gray-50 flex items-center justify-center mb-6"
-              >
-                <Package className="w-16 h-16 text-gray-400" />
-              </motion.div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                尚無訂單
-              </h2>
-              <p className="text-gray-600 mb-6">
-                {activeTab === 'all'
-                  ? '開始購物，查看您的訂單'
-                  : '目前沒有這個狀態的訂單'}
-              </p>
-              <Button onClick={() => setActiveTab('all')}>查看所有訂單</Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredOrders.map((order, idx) => {
-                const statusInfo = statusConfig[order.status];
-                const StatusIcon = statusInfo.icon;
-                const isExpanded = expandedOrder === order.id;
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <p className="text-gray-500">載入中...</p>
+          </div>
+        )}
 
-                return (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: idx * 0.05 }}
-                  >
-                    <Card padding="none" className="overflow-hidden">
-                      <div
-                        className="p-4 cursor-pointer"
-                        onClick={() =>
-                          setExpandedOrder(isExpanded ? null : order.id)
-                        }
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {order.orderNumber}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              {formatDate(order.date)}
-                            </p>
+        {!loading && error && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <XCircle className="w-16 h-16 text-red-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">無法載入訂單</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Button onClick={fetchOrders}>重試</Button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <AnimatePresence mode="wait">
+            {filteredOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-32 h-32 rounded-full bg-gray-50 flex items-center justify-center mb-6"
+                >
+                  <Package className="w-16 h-16 text-gray-400" />
+                </motion.div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  尚無訂單
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  {activeTab === 'all'
+                    ? '開始購物，查看您的訂單'
+                    : '目前沒有這個狀態的訂單'}
+                </p>
+                <Button onClick={() => setActiveTab('all')}>查看所有訂單</Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredOrders.map((order, idx) => {
+                  const statusInfo = statusConfig[order.status];
+                  const StatusIcon = statusInfo.icon;
+                  const isExpanded = expandedOrder === order.id;
+
+                  return (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    >
+                      <Card padding="none" className="overflow-hidden">
+                        <div
+                          className="p-4 cursor-pointer"
+                          onClick={() =>
+                            setExpandedOrder(isExpanded ? null : order.id)
+                          }
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {order.id}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {formatDate(order.createdAt)}
+                              </p>
+                            </div>
+                            <Badge variant={statusInfo.variant}>
+                              <StatusIcon className="w-3 h-3 mr-1" />
+                              {statusInfo.label}
+                            </Badge>
                           </div>
-                          <Badge variant={statusInfo.variant}>
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {statusInfo.label}
-                          </Badge>
+
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs font-medium text-gray-400">
+                              商店：
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {order.merchantName}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {order.items.slice(0, 2).map((item) => (
+                                <img
+                                  key={item.id}
+                                  src={`https://picsum.photos/seed/${item.image}/60/60`}
+                                  alt={item.name}
+                                  className="w-12 h-12 object-cover rounded-lg bg-gray-50"
+                                />
+                              ))}
+                              {order.items.length > 2 && (
+                                <div className="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center text-xs text-gray-400">
+                                  +{order.items.length - 2}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-gray-400">
+                                共 {order.items.reduce((s, i) => s + i.quantity, 0)} 件
+                              </p>
+                              <p className="font-semibold text-indigo-600">
+                                {formatPrice(order.totalAmount)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs font-medium text-gray-400">
-                            商店：
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {order.merchantName}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {order.items.slice(0, 2).map((item) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={item.id}
-                                src={`https://picsum.photos/seed/${item.image}/60/60`}
-                                alt={item.name}
-                                className="w-12 h-12 object-cover rounded-lg bg-gray-50"
-                              />
-                            ))}
-                            {order.items.length > 2 && (
-                              <div className="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center text-xs text-gray-400">
-                                +{order.items.length - 2}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xs text-gray-400">
-                              共 {order.items.reduce((s, i) => s + i.quantity, 0)} 件
-                            </p>
-                            <p className="font-semibold text-indigo-600">
-                              {formatPrice(order.total)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="px-4 pb-4 border-t border-gray-200 pt-4 overflow-hidden"
-                          >
-                            <div className="space-y-3">
-                              {order.items.map((item) => (
-                                <div key={item.id} className="flex gap-3">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={`https://picsum.photos/seed/${item.image}/60/60`}
-                                    alt={item.name}
-                                    className="w-14 h-14 object-cover rounded-lg bg-gray-50 flex-shrink-0"
-                                  />
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {item.name}
-                                    </p>
-                                    <p className="text-xs text-gray-600">
-                                      {item.variantName}
-                                    </p>
-                                    <p className="text-xs text-gray-400">
-                                      x{item.quantity}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="px-4 pb-4 border-t border-gray-200 pt-4 overflow-hidden"
+                            >
+                              <div className="space-y-3">
+                                {order.items.map((item) => (
+                                  <div key={item.id} className="flex gap-3">
+                                    <img
+                                      src={`https://picsum.photos/seed/${item.image}/60/60`}
+                                      alt={item.name}
+                                      className="w-14 h-14 object-cover rounded-lg bg-gray-50 flex-shrink-0"
+                                    />
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-gray-900">
+                                        {item.name}
+                                      </p>
+                                      <p className="text-xs text-gray-600">
+                                        {item.variantName}
+                                      </p>
+                                      <p className="text-xs text-gray-400">
+                                        x{item.quantity}
+                                      </p>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-900 flex-shrink-0">
+                                      {formatPrice(item.price * item.quantity)}
                                     </p>
                                   </div>
-                                  <p className="text-sm font-medium text-gray-900 flex-shrink-0">
-                                    {formatPrice(item.price * item.quantity)}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-4 flex justify-end">
-                              <Badge variant="default">查看詳情</Badge>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </AnimatePresence>
+                                ))}
+                              </div>
+                              <div className="mt-4 flex justify-end">
+                                <Badge variant="default">查看詳情</Badge>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </AnimatePresence>
+        )}
       </div>
     </ClientLayout>
   );

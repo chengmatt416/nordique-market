@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+
+const FIREBASE_NOT_CONFIGURED = NextResponse.json(
+  { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
+  { status: 503 }
+);
 
 export async function GET(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const merchantId = searchParams.get('merchantId');
@@ -36,6 +43,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const body = await request.json();
     const db = getAdminDb();
     const productRef = db.collection('products').doc();
@@ -54,9 +63,11 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const body = await request.json();
     const { id, ...data } = body;
-    
+
     const db = getAdminDb();
     await db.collection('products').doc(id).update({
       ...data,
@@ -72,6 +83,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

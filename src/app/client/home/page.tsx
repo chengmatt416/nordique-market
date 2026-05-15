@@ -1,12 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card, Badge } from '@/components/ui';
+import { ProductCardSkeleton } from '@/components/ui/Skeleton';
 import { formatPrice, cn, calculateDiscount } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Clock, Sparkles, ShoppingBag, Zap, ArrowRight } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Clock, Sparkles, ShoppingBag, Zap, ArrowRight, AlertTriangle } from 'lucide-react';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+  sold: number;
+}
 
 const categories = [
   { name: '時尚', icon: 'ShoppingBag' },
@@ -24,18 +36,7 @@ const iconMap: Record<string, React.ReactNode> = {
   Sparkles: <Sparkles className="w-6 h-6" />,
 };
 
-const sampleProducts = [
-  { id: '1', name: '北歐簡約陶瓷花瓶', price: 1299, originalPrice: 1999, rating: 4.8, reviews: 236, image: 'vase-1', sold: 456 },
-  { id: '2', name: '純手工羊毛抱枕', price: 899, originalPrice: 1499, rating: 4.9, reviews: 189, image: 'pillow-2', sold: 234 },
-  { id: '3', name: '實木多功能收納架', price: 2599, originalPrice: 3299, rating: 4.7, reviews: 156, image: 'shelf-3', sold: 189 },
-  { id: '4', name: 'LED智能北歐桌燈', price: 1899, originalPrice: 2499, rating: 4.6, reviews: 98, image: 'lamp-4', sold: 156 },
-  { id: '5', name: '極簡純棉床組', price: 3299, originalPrice: 4599, rating: 4.9, reviews: 312, image: 'bed-5', sold: 98 },
-  { id: '6', name: '創意幾何地毯', price: 2199, originalPrice: 2999, rating: 4.5, reviews: 145, image: 'rug-6', sold: 167 },
-  { id: '7', name: '質感皮革收納盒', price: 799, originalPrice: 1199, rating: 4.7, reviews: 203, image: 'box-7', sold: 345 },
-  { id: '8', name: '不鏽鋼保溫水瓶', price: 599, originalPrice: 899, rating: 4.8, reviews: 427, image: 'bottle-8', sold: 567 },
-];
-
-function ProductCard({ product, index }: { product: typeof sampleProducts[0]; index: number }) {
+function ProductCard({ product, index }: { product: Product; index: number }) {
   const [isHovered, setIsHovered] = useState(false);
   const discount = calculateDiscount(product.originalPrice, product.price);
 
@@ -55,13 +56,15 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
         >
           <div className="relative aspect-square overflow-hidden bg-gray-100">
             <img
-              src={`https://picsum.photos/seed/${product.image}/400/400`}
+              src={`https://picsum.photos/seed/${product.id}/400/400`}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="absolute top-2 left-2">
-              <Badge variant="error" className="text-xs font-semibold">{discount}% OFF</Badge>
-            </div>
+            {discount > 0 && (
+              <div className="absolute top-2 left-2">
+                <Badge variant="error" className="text-xs font-semibold">{discount}% OFF</Badge>
+              </div>
+            )}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0 }}
@@ -87,12 +90,15 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
             </h3>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-lg font-bold text-indigo-600">{formatPrice(product.price)}</span>
-              <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+              {product.originalPrice > product.price && (
+                <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+              )}
             </div>
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-xs text-gray-500">{product.rating}</span>
+                <span className="text-xs text-gray-500">{product.rating.toFixed(1)}</span>
+                <span className="text-xs text-gray-400">({product.reviewCount})</span>
               </div>
               <span className="text-xs text-gray-400">已售 {product.sold}</span>
             </div>
@@ -103,8 +109,67 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
   );
 }
 
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
+      <p className="text-gray-500 text-lg mb-4">尚無商品</p>
+      <Link href="/firebase-setup">
+        <Button>前往 Firebase 設定</Button>
+      </Link>
+    </div>
+  );
+}
+
+function ErrorBanner() {
+  return (
+    <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+      <div className="flex-1">
+        <p className="text-sm font-medium text-amber-800">Firebase 尚未設定</p>
+        <p className="text-xs text-amber-600 mt-0.5">請先完成 Firebase 設定以載入商品資料</p>
+      </div>
+      <Link href="/firebase-setup">
+        <Button size="sm" variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+          前往設定
+        </Button>
+      </Link>
+    </div>
+  );
+}
+
 export default function HomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [countdown] = useState({ h: 11, m: 59, s: 59 });
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) {
+          if (res.status === 503) {
+            setError('firebase_not_configured');
+          } else {
+            setError('fetch_failed');
+          }
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setProducts(data.products || []);
+      } catch {
+        setError('fetch_failed');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+
+  const featuredProducts = products.slice(0, 4);
+  const recommendedProducts = products.slice(4, 8);
 
   return (
     <ClientLayout>
@@ -204,6 +269,12 @@ export default function HomePage() {
           </div>
         </Card>
 
+        {error === 'firebase_not_configured' && (
+          <section>
+            <ErrorBanner />
+          </section>
+        )}
+
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">熱門商品</h2>
@@ -212,22 +283,34 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {sampleProducts.slice(0, 4).map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            ) : featuredProducts.length === 0 ? (
+              <div className="col-span-2 md:col-span-4">
+                <EmptyState />
+              </div>
+            ) : (
+              featuredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))
+            )}
           </div>
         </section>
 
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">為您推薦</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {sampleProducts.slice(4).map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
-        </section>
+        {!loading && recommendedProducts.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">為您推薦</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recommendedProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </div>
+          </section>
+        )}
 
       </div>
     </ClientLayout>

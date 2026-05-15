@@ -1,20 +1,22 @@
+const BRAND = process.env.NEXT_PUBLIC_BRAND_NAME || 'AURA';
+
 export const BrandConfig = {
-  name: 'AURA',
-  displayName: 'AURA',
+  name: BRAND,
+  displayName: BRAND,
   tagline: '探索北歐光環，感受純淨生活之美',
   description: '精選來自北歐的優質商品，為您打造簡約舒適的家居生活體驗',
   logo: '/logo.svg',
 
   contact: {
-    email: 'support@aura-store.com',
+    email: `support@${BRAND.toLowerCase()}-store.com`,
     phone: '02-1234-5678',
     address: '台北市松山區民生東路三段128號',
   },
 
   social: {
-    facebook: 'https://facebook.com/aurastore',
-    instagram: 'https://instagram.com/aurastore',
-    line: '@aura-store',
+    facebook: `https://facebook.com/${BRAND.toLowerCase()}store`,
+    instagram: `https://instagram.com/${BRAND.toLowerCase()}store`,
+    line: `@${BRAND.toLowerCase()}-store`,
   },
 
   colors: {
@@ -34,14 +36,14 @@ export const BrandConfig = {
       { name: '新聞中心', href: '/news' },
     ],
     support: [
-      { name: '幫助中心', href: '/help' },
-      { name: '聯絡客服', href: '/contact' },
-      { name: '常見問題', href: '/faq' },
+      { name: '幫助中心', href: '/support/help-center' },
+      { name: '聯絡客服', href: '/support/contact' },
+      { name: '常見問題', href: '/support/help-center' },
     ],
     legal: [
-      { name: '隱私權政策', href: '/privacy' },
-      { name: '服務條款', href: '/terms' },
-      { name: '退換貨政策', href: '/returns' },
+      { name: '隱私權政策', href: '/legal/privacy' },
+      { name: '服務條款', href: '/legal/terms' },
+      { name: '退換貨政策', href: '/support/help-center' },
     ],
   },
 
