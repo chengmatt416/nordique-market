@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
 import { requireAdminAuth } from '@/lib/admin-check';
-
-const FIREBASE_NOT_CONFIGURED = NextResponse.json(
-  { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
-  { status: 503 }
-);
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
 
     const db = getAdminDb();
     const snapshot = await db.collection('merchants').orderBy('createdAt', 'desc').get();
@@ -30,7 +25,7 @@ export async function PUT(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
 
     const body = await request.json();
     const { id, status, rejectReason } = body;

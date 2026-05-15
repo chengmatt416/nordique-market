@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminDb, FieldValue, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
 import { isAdminEmail } from '@/lib/admin-check';
-
-const FIREBASE_NOT_CONFIGURED = NextResponse.json(
-  { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
-  { status: 503 }
-);
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
 
     const body = await request.json();
     const { idToken, role, name, photoURL } = body;
@@ -82,7 +77,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
 
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {

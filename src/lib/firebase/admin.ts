@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp, cert, App } from 'firebase-admin/app';
 import { getAuth as getAdminAuthSdk } from 'firebase-admin/auth';
 import { getFirestore as getAdminFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getStorage as getAdminStorageSdk } from 'firebase-admin/storage';
+import { NextResponse } from 'next/server';
 
 let adminApp: App | null = null;
 
@@ -15,12 +16,15 @@ export function isFirebaseConfigured(): { ok: boolean; missing: string[] } {
 
 export function firebaseNotConfiguredResponse() {
   const { missing } = isFirebaseConfigured();
-  return {
-    error: 'Firebase Admin SDK is not configured. Missing environment variables: ' + missing.join(', ') + '. ' +
-      'Please copy .env.example to .env.local and fill in the Firebase Admin credentials. ' +
-      'Get them from Firebase Console > Project Settings > Service Accounts > Generate new private key.',
-    missing,
-  };
+  return NextResponse.json(
+    {
+      error: 'Firebase Admin SDK is not configured',
+      detail: 'Missing: ' + missing.join(', '),
+      hint: 'Copy .env.example to .env.local and fill in the Firebase Admin credentials from Firebase Console > Project Settings > Service Accounts',
+      missing,
+    },
+    { status: 503 }
+  );
 }
 
 function initAdminApp(): App {

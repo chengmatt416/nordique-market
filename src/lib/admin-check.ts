@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { getAdminAuth, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'pinyen.no2fa@gmail.com';
 
@@ -16,7 +16,7 @@ const UNAUTHORIZED = NextResponse.json({ error: 'Unauthorized' }, { status: 403 
 
 export async function requireAdminAuth(request: Request): Promise<NextResponse | { email: string }> {
   if (!isFirebaseConfigured().ok) {
-    return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
+    return firebaseNotConfiguredResponse();
   }
 
   const authHeader = request.headers.get('Authorization');
