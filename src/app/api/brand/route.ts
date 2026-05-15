@@ -4,7 +4,7 @@ import { requireAdminAuth } from '@/lib/admin-check';
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseConfigured().ok) {
       return NextResponse.json(getDefaultBrand());
     }
     const db = getAdminDb();
@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured()) {
+    if (!isFirebaseConfigured().ok) {
       return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
     }
     const db = getAdminDb();

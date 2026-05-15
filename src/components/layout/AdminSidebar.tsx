@@ -11,6 +11,7 @@ import {
   Shield,
   Settings,
   ChevronLeft,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/admin/users", icon: Users, label: "用戶管理" },
   { href: "/admin/products", icon: Package, label: "商品審核" },
   { href: "/admin/orders", icon: ShoppingCart, label: "訂單管理" },
+  { href: "/admin/messages", icon: MessageSquare, label: "客服訊息" },
   { href: "/admin/brand", icon: Settings, label: "品牌設定" },
 ];
 

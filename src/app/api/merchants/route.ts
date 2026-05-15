@@ -9,7 +9,7 @@ const FIREBASE_NOT_CONFIGURED = NextResponse.json(
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const db = getAdminDb();
     const snapshot = await db.collection('merchants').orderBy('createdAt', 'desc').get();
@@ -30,7 +30,7 @@ export async function PUT(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
     const { id, status, rejectReason } = body;

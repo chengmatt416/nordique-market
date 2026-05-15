@@ -9,7 +9,7 @@ const FIREBASE_NOT_CONFIGURED = NextResponse.json(
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
     const { idToken, role, name, photoURL } = body;
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {

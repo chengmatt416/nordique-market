@@ -9,7 +9,7 @@ const FIREBASE_NOT_CONFIGURED = NextResponse.json(
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const auth = getAdminAuth();
     const users: { uid: string; email: string; displayName: string; photoURL: string; customClaims: { role?: string } }[] = [];
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
     const { uid, role } = body;
@@ -57,7 +57,7 @@ export async function DELETE(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const { searchParams } = new URL(request.url);
     const uid = searchParams.get('uid');

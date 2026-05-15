@@ -8,7 +8,7 @@ const FIREBASE_NOT_CONFIGURED = NextResponse.json(
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
     const db = getAdminDb();
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
     const { id, status, trackingNumber, ...data } = body;

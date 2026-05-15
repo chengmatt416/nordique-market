@@ -30,7 +30,7 @@ function getRelevance(product: { name: string; description?: string }, query: st
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
+    if (!isFirebaseConfigured().ok) return FIREBASE_NOT_CONFIGURED;
 
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q')?.trim() || '';

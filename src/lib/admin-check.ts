@@ -15,7 +15,7 @@ export function getAdminEmail(): string {
 const UNAUTHORIZED = NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
 export async function requireAdminAuth(request: Request): Promise<NextResponse | { email: string }> {
-  if (!isFirebaseConfigured()) {
+  if (!isFirebaseConfigured().ok) {
     return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
   }
 
