@@ -9,12 +9,14 @@ import {
   Users,
   Store,
   Shield,
+  Settings,
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BrandConfig } from "@/config/brand";
+
+const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || '';
 
 interface AdminSidebarProps {
   className?: string;
@@ -26,6 +28,7 @@ const navItems = [
   { href: "/admin/users", icon: Users, label: "用戶管理" },
   { href: "/admin/products", icon: Package, label: "商品審核" },
   { href: "/admin/orders", icon: ShoppingCart, label: "訂單管理" },
+  { href: "/admin/brand", icon: Settings, label: "品牌設定" },
 ];
 
 export function AdminSidebar({ className }: AdminSidebarProps) {
@@ -50,7 +53,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
           {!collapsed && (
             <Link href="/admin/dashboard" className="flex items-center gap-2">
               <Shield className="w-6 h-6 text-pink-400" />
-              <span className="text-lg font-bold text-white">{BrandConfig.name}</span>
+              <span className="text-lg font-bold text-white">{brandName}</span>
             </Link>
           )}
           {collapsed && <Shield className="w-6 h-6 text-pink-400" />}

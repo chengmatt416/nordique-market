@@ -1,18 +1,48 @@
 'use client';
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { BrandConfig } from '@/config/brand';
 import { useToast } from '@/components/ui/Toast';
 
-const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || 'AURA';
+const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || '';
+
+interface BrandContact {
+  contactEmail: string;
+  contactPhone: string;
+  contactAddress: string;
+  contactExtraInfo: string;
+}
 
 export default function ContactPage() {
   const { showToast } = useToast();
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [brand, setBrand] = useState<BrandContact>({
+    contactEmail: '',
+    contactPhone: '',
+    contactAddress: '',
+    contactExtraInfo: '',
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/brand')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setBrand({
+            contactEmail: data.contactEmail || '',
+            contactPhone: data.contactPhone || '',
+            contactAddress: data.contactAddress || '',
+            contactExtraInfo: data.contactExtraInfo || '',
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -154,7 +184,7 @@ export default function ContactPage() {
                   <Mail className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">電子郵件</h3>
-                    <p className="text-sm text-gray-500">{BrandConfig.contact.email}</p>
+                    <p className="text-sm text-gray-500">{brand.contactEmail || '尚未設定'}</p>
                     <p className="text-xs text-gray-400 mt-1">24 小時內回覆</p>
                   </div>
                 </div>
@@ -165,7 +195,7 @@ export default function ContactPage() {
                   <Phone className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">客服專線</h3>
-                    <p className="text-sm text-gray-500">{BrandConfig.contact.phone}</p>
+                    <p className="text-sm text-gray-500">{brand.contactPhone || '尚未設定'}</p>
                     <p className="text-xs text-gray-400 mt-1">週一至週五 09:00-18:00</p>
                   </div>
                 </div>
@@ -176,10 +206,17 @@ export default function ContactPage() {
                   <MapPin className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">公司地址</h3>
-                    <p className="text-sm text-gray-500">{BrandConfig.contact.address}</p>
+                    <p className="text-sm text-gray-500">{brand.contactAddress || '尚未設定'}</p>
                   </div>
                 </div>
               </div>
+
+              {brand.contactExtraInfo && (
+                <div className="bg-white rounded-xl border border-gray-200 p-5">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">其他資訊</h3>
+                  <p className="text-sm text-gray-500 whitespace-pre-line">{brand.contactExtraInfo}</p>
+                </div>
+              )}
 
               <div className="bg-white rounded-xl border border-gray-200 p-5">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">客服時間</h3>
@@ -205,7 +242,7 @@ export default function ContactPage() {
 
       <footer className="bg-white border-t border-gray-200 py-8 px-6">
         <div className="max-w-6xl mx-auto text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} {brandName}. All rights reserved.
+          &copy; {new Date().getFullYear()} {brandName}. All rights reserved.
         </div>
       </footer>
     </div>
