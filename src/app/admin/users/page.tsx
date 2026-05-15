@@ -1,95 +1,119 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
-import { Card, Badge, Button, Input, Modal } from '@/components/ui';
-import { formatDate, cn } from '@/lib/utils';
+import { Card, Badge, Button, Modal } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, MoreVertical, UserX, UserCheck, Eye } from 'lucide-react';
+import { Users, Search, MoreVertical, Eye, Loader2, AlertTriangle } from 'lucide-react';
 
-type Role = '顧客' | '商家';
-type Status = '正常' | '停權';
-type TabType = '全部' | '顧客' | '商家';
+type TabType = 'all' | 'customer' | 'merchant';
 
-interface User {
-  id: number;
-  name: string;
+interface UserData {
+  uid: string;
   email: string;
-  role: Role;
-  status: Status;
-  joinDate: string;
-  orders: number;
-  totalSpent: number;
-  avatarColor: string;
+  displayName: string;
+  photoURL: string;
+  role?: string;
 }
 
-const users: User[] = [
-  { id: 1, name: '王小明', email: 'wang.xiaoming@gmail.com', role: '顧客', status: '正常', joinDate: '2024-01-15', orders: 12, totalSpent: 45600, avatarColor: 'bg-blue-500' },
-  { id: 2, name: '李佳怡', email: 'li.jiayi@yahoo.com.tw', role: '商家', status: '正常', joinDate: '2024-01-10', orders: 89, totalSpent: 0, avatarColor: 'bg-pink-500' },
-  { id: 3, name: '張志偉', email: 'chang.chihwei@msn.com', role: '顧客', status: '正常', joinDate: '2024-01-08', orders: 5, totalSpent: 12800, avatarColor: 'bg-purple-500' },
-  { id: 4, name: '陳雅惠', email: 'chen.yahui@pchome.com.tw', role: '商家', status: '停權', joinDate: '2024-01-05', orders: 34, totalSpent: 0, avatarColor: 'bg-rose-500' },
-  { id: 5, name: '林建志', email: 'lin.jianzhi@gmail.com', role: '顧客', status: '正常', joinDate: '2024-01-03', orders: 23, totalSpent: 78900, avatarColor: 'bg-emerald-500' },
-  { id: 6, name: '黃怡君', email: 'huang.yijun@hotmail.com', role: '顧客', status: '停權', joinDate: '2023-12-28', orders: 8, totalSpent: 24500, avatarColor: 'bg-amber-500' },
-  { id: 7, name: '周杰倫', email: 'zhou.jielun@gmail.com', role: '商家', status: '正常', joinDate: '2023-12-20', orders: 156, totalSpent: 0, avatarColor: 'bg-cyan-500' },
-  { id: 8, name: '吳淑芬', email: 'wu.shufen@yahoo.com.tw', role: '顧客', status: '正常', joinDate: '2023-12-15', orders: 3, totalSpent: 5600, avatarColor: 'bg-indigo-500' },
-  { id: 9, name: '孫大偉', email: 'sun.dawei@gmail.com', role: '顧客', status: '正常', joinDate: '2023-12-10', orders: 17, totalSpent: 42300, avatarColor: 'bg-teal-500' },
-  { id: 10, name: '曾雅琪', email: 'zeng.yaqi@livemail.com', role: '商家', status: '正常', joinDate: '2023-12-05', orders: 67, totalSpent: 0, avatarColor: 'bg-violet-500' },
+const tabs: { key: TabType; label: string }[] = [
+  { key: 'all', label: '全部' },
+  { key: 'customer', label: '顧客' },
+  { key: 'merchant', label: '商家' },
 ];
 
 function getInitials(name: string): string {
-  return name.slice(0, 2);
+  return name.slice(0, 2) || '?';
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('zh-TW', {
-    style: 'currency',
-    currency: 'TWD',
-    minimumFractionDigits: 0,
-  }).format(amount);
-}
+const roleColors: Record<string, string> = {
+  customer: 'bg-blue-500',
+  merchant: 'bg-pink-500',
+  admin: 'bg-purple-500',
+};
 
 export default function AdminUsersPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('全部');
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  async function fetchUsers() {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch('/api/users');
+      if (!res.ok) {
+        if (res.status === 503) { setError('firebase_not_configured'); return; }
+        throw new Error('無法載入');
+      }
+      const data = await res.json();
+      setUsers(data.users || []);
+    } catch {
+      setError('載入失敗');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredUsers = users.filter((user) => {
-    const matchesTab = activeTab === '全部' || user.role === activeTab;
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const role = user.role || 'customer';
+    const matchesTab = activeTab === 'all' || role === activeTab;
+    const name = (user.displayName || user.email || '').toLowerCase();
+    const matchesSearch = name.includes(searchQuery.toLowerCase()) || user.email.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
-  const tabCounts: Record<TabType, number> = {
-    '全部': users.length,
-    '顧客': users.filter((u) => u.role === '顧客').length,
-    '商家': users.filter((u) => u.role === '商家').length,
+  const tabCounts = {
+    all: users.length,
+    customer: users.filter((u) => (u.role || 'customer') === 'customer').length,
+    merchant: users.filter((u) => u.role === 'merchant').length,
   };
 
-  const handleViewDetails = (user: User) => {
-    setSelectedUser(user);
-    setIsDetailModalOpen(true);
-    setOpenDropdownId(null);
-  };
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+          <span className="ml-3 text-gray-600">載入中...</span>
+        </div>
+      </AdminLayout>
+    );
+  }
 
-  const handleToggleStatus = (userId: number) => {
-    const user = users.find((u) => u.id === userId);
-    if (user) {
-      user.status = user.status === '正常' ? '停權' : '正常';
-    }
-    setOpenDropdownId(null);
-  };
+  if (error === 'firebase_not_configured') {
+    return (
+      <AdminLayout>
+        <div className="text-center py-20">
+          <AlertTriangle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Firebase 尚未設定</h2>
+          <p className="text-gray-600">請先完成 Firebase 設定以管理用戶</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
-  const getRoleBadgeVariant = (role: Role) => {
-    return role === '顧客' ? 'default' : 'accent';
-  };
-
-  const getStatusBadgeVariant = (status: Status) => {
-    return status === '正常' ? 'success' : 'error';
-  };
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="text-center py-20">
+          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <p className="text-gray-900 font-medium mb-2">載入失敗</p>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button onClick={fetchUsers}>重試</Button>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -105,30 +129,32 @@ export default function AdminUsersPage() {
           <div className="p-4 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg">
-                {(['全部', '顧客', '商家'] as TabType[]).map((tab) => (
+                {tabs.map((tab) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
                     className={cn(
                       'px-4 py-2 text-sm font-medium rounded-md transition-all duration-150',
-                      activeTab === tab
+                      activeTab === tab.key
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
-                    {tab}
-                    <Badge variant={activeTab === tab ? 'default' : 'default'} className="ml-2">
-                      {tabCounts[tab]}
-                    </Badge>
+                    {tab.label}
+                    <span className={cn('ml-1.5 text-xs px-1.5 py-0.5 rounded-full', activeTab === tab.key ? 'bg-indigo-600/10 text-indigo-600' : 'bg-gray-200')}>
+                      {tabCounts[tab.key]}
+                    </span>
                   </button>
                 ))}
               </div>
-              <div className="w-full sm:w-72">
-                <Input
-                  placeholder="搜尋用戶名稱或電子郵件..."
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="搜尋名稱或電子郵件..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  icon={<Search className="w-4 h-4" />}
+                  className="w-64 h-10 pl-10 pr-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
                 />
               </div>
             </div>
@@ -138,193 +164,114 @@ export default function AdminUsersPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    用戶
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    角色
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    狀態
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    加入日期
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
-                    操作
-                  </th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">用戶</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">電子郵件</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">角色</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">UID</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">操作</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={cn('w-10 h-10 rounded-full flex items-center justify-center text-white font-medium', user.avatarColor)}>
-                          {getInitials(user.name)}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-600">{user.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4">
-                      <Badge variant={getStatusBadgeVariant(user.status)}>
-                        {user.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
-                      {formatDate(user.joinDate)}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="relative inline-block">
-                        <button
-                          onClick={() => setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
-                          className="p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <MoreVertical className="w-4 h-4 text-gray-600" />
-                        </button>
-                        <AnimatePresence>
-                          {openDropdownId === user.id && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                              animate={{ opacity: 1, scale: 1, y: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                              transition={{ duration: 0.1 }}
-                              className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+              <tbody>
+                <AnimatePresence>
+                  {filteredUsers.map((user) => {
+                    const role = user.role || 'customer';
+                    return (
+                      <motion.tr
+                        key={user.uid}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-medium', roleColors[role] || 'bg-gray-500')}>
+                              {user.photoURL ? (
+                                <img src={user.photoURL} alt="" className="w-full h-full rounded-full object-cover" />
+                              ) : (
+                                getInitials(user.displayName || user.email)
+                              )}
+                            </div>
+                            <span className="font-medium text-gray-900">{user.displayName || '未設定'}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant={role === 'merchant' ? 'accent' : role === 'admin' ? 'warning' : 'default'}>
+                            {role === 'customer' ? '顧客' : role === 'merchant' ? '商家' : '管理員'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-xs text-gray-400 font-mono">{user.uid.slice(0, 12)}...</td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center justify-end relative">
+                            <button
+                              onClick={() => setOpenDropdownId(openDropdownId === user.uid ? null : user.uid)}
+                              className="p-1.5 rounded-md hover:bg-gray-50 transition-colors"
                             >
-                              <button
-                                onClick={() => handleViewDetails(user)}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center gap-2"
-                              >
-                                <Eye className="w-4 h-4" />
-                                查看詳情
-                              </button>
-                              <button
-                                onClick={() => handleToggleStatus(user.id)}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center gap-2"
-                              >
-                                {user.status === '正常' ? (
-                                  <>
-                                    <UserX className="w-4 h-4" />
-                                    停權用戶
-                                  </>
-                                ) : (
-                                  <>
-                                    <UserCheck className="w-4 h-4" />
-                                    啟任用戶
-                                  </>
-                                )}
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                              <MoreVertical className="w-4 h-4 text-gray-600" />
+                            </button>
+                            <AnimatePresence>
+                              {openDropdownId === user.uid && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                  className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-10"
+                                >
+                                  <button
+                                    onClick={() => { setSelectedUser(user); setIsDetailModalOpen(true); setOpenDropdownId(null); }}
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-900 hover:bg-gray-50"
+                                  >
+                                    <Eye className="w-4 h-4" /> 查看詳情
+                                  </button>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
               </tbody>
             </table>
-          </div>
 
-          {filteredUsers.length === 0 && (
-            <div className="p-8 text-center">
-              <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600">找不到符合條件的用戶</p>
-            </div>
-          )}
-
-          <div className="p-4 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              顯示 {filteredUsers.length} 筆結果，共 {users.length} 位用戶
-            </p>
+            {filteredUsers.length === 0 && (
+              <div className="py-12 text-center text-gray-600">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>找不到符合條件的用戶</p>
+              </div>
+            )}
           </div>
         </Card>
+      </div>
 
-        <Modal
-          isOpen={isDetailModalOpen}
-          onClose={() => setIsDetailModalOpen(false)}
-          title="用戶詳情"
-          size="lg"
-        >
-          {selectedUser && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className={cn('w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-medium', selectedUser.avatarColor)}>
-                  {getInitials(selectedUser.name)}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{selectedUser.name}</h3>
-                  <p className="text-sm text-gray-600">{selectedUser.email}</p>
-                </div>
+      <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} title="用戶詳情" size="md">
+        {selectedUser && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className={cn('w-14 h-14 rounded-full flex items-center justify-center text-white text-xl font-bold', roleColors[selectedUser.role || 'customer'])}>
+                {selectedUser.photoURL ? (
+                  <img src={selectedUser.photoURL} alt="" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  getInitials(selectedUser.displayName || selectedUser.email)
+                )}
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">角色</p>
-                  <Badge variant={getRoleBadgeVariant(selectedUser.role)} className="mt-1">
-                    {selectedUser.role}
-                  </Badge>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">狀態</p>
-                  <Badge variant={getStatusBadgeVariant(selectedUser.status)} className="mt-1">
-                    {selectedUser.status}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">訂單數量</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{selectedUser.orders}</p>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">消費金額</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">
-                    {selectedUser.role === '顧客' ? formatCurrency(selectedUser.totalSpent) : '-'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">加入日期</p>
-                <p className="text-base font-medium text-gray-900 mt-1">
-                  {formatDate(selectedUser.joinDate)}
-                </p>
-              </div>
-
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setIsDetailModalOpen(false)}
-                >
-                  關閉
-                </Button>
-                <Button
-                  variant={selectedUser.status === '正常' ? 'secondary' : 'primary'}
-                  className="flex-1"
-                  onClick={() => {
-                    handleToggleStatus(selectedUser.id);
-                    setSelectedUser(
-                      users.find((u) => u.id === selectedUser.id) || null
-                    );
-                  }}
-                >
-                  {selectedUser.status === '正常' ? '停權用戶' : '啟任用戶'}
-                </Button>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{selectedUser.displayName || '未設定'}</h3>
+                <p className="text-sm text-gray-600">{selectedUser.email}</p>
+                <Badge variant={selectedUser.role === 'merchant' ? 'accent' : selectedUser.role === 'admin' ? 'warning' : 'default'} className="mt-1">
+                  {selectedUser.role === 'customer' ? '顧客' : selectedUser.role === 'merchant' ? '商家' : '管理員'}
+                </Badge>
               </div>
             </div>
-          )}
-        </Modal>
-      </div>
+            <div className="border-t border-gray-200 pt-4">
+              <p className="text-sm text-gray-600">UID</p>
+              <p className="text-sm font-mono text-gray-900 break-all">{selectedUser.uid}</p>
+            </div>
+          </div>
+        )}
+      </Modal>
     </AdminLayout>
   );
 }

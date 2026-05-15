@@ -89,12 +89,12 @@ export default function MerchantDashboard() {
 
         setStats({
           todaySales: todayOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0),
-          todaySalesChange: 12,
+          todaySalesChange: 0,
           pendingOrders: pending.length,
           monthlyRevenue: monthOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0),
-          monthlyRevenueChange: 8,
-          productViews: 2340,
-          productViewsChange: -2,
+          monthlyRevenueChange: 0,
+          productViews: products.length,
+          productViewsChange: 0,
         });
 
         setRecentOrders(
