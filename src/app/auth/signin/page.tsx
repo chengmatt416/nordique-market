@@ -24,36 +24,41 @@ export default function SignInPage() {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Use API route instead of direct Firestore — no permissions errors
+      let data;
       try {
-        const data = await registerUser({
+        data = await registerUser({
           idToken,
           role: '',
           name: user.displayName || '',
           photoURL: user.photoURL || '',
         });
-
-        showToast('登入成功！', 'success');
-        const role = data.role || 'customer';
-
-        if (data.existing) {
-          switch (role) {
-            case 'customer': router.push('/client/home'); break;
-            case 'merchant': router.push('/merchant/dashboard'); break;
-            case 'admin': router.push('/admin/dashboard'); break;
-            default: router.push('/client/home');
-          }
-        } else {
-          switch (role) {
-            case 'merchant': router.push('/onboarding/merchant'); break;
-            case 'admin': router.push('/onboarding/admin'); break;
-            default: router.push('/onboarding/customer');
-          }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : '';
+        if (msg.includes('not configured') || msg.includes('Firebase')) {
+          showToast('Firebase 尚未設定，請先完成設定', 'error');
+          router.push('/firebase-setup');
+          return;
         }
-      } catch {
-        // New user — redirect to onboarding
-        showToast('歡迎新用戶！請先完成設定', 'info');
-        router.push('/onboarding/customer');
+        showToast('登入失敗，請稍後再試', 'error');
+        return;
+      }
+
+      showToast('登入成功！', 'success');
+      const role = data.role || 'customer';
+
+      if (data.existing) {
+        switch (role) {
+          case 'customer': router.push('/client/home'); break;
+          case 'merchant': router.push('/merchant/dashboard'); break;
+          case 'admin': router.push('/admin/dashboard'); break;
+          default: router.push('/client/home');
+        }
+      } else {
+        switch (role) {
+          case 'merchant': router.push('/onboarding/merchant'); break;
+          case 'admin': router.push('/onboarding/admin'); break;
+          default: router.push('/onboarding/customer');
+        }
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : '登入失敗';
