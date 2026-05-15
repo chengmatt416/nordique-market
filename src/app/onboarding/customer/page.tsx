@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card } from '@/components/ui';
+import { BrandConfig } from '@/config/brand';
+import { cn } from '@/lib/utils';
 import { User, Heart, Bell, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -76,32 +78,34 @@ export default function CustomerOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="w-full max-w-2xl mx-auto px-6 pt-12 pb-8">
         <div className="flex items-center justify-between mb-8">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={cn(
+                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
                   index <= currentStep
-                    ? 'bg-[var(--primary)] text-white'
-                    : 'bg-[var(--border)] text-[var(--text-muted)]'
-                }`}
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                )}
               >
                 <step.icon className="w-5 h-5" />
               </div>
               {index < STEPS.length - 1 && (
                 <div
-                  className={`w-12 h-0.5 mx-1 transition-all duration-300 ${
-                    index < currentStep ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'
-                  }`}
+                  className={cn(
+                    'w-12 h-0.5 mx-1 transition-all duration-300',
+                    index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
+                  )}
                 />
               )}
             </div>
           ))}
         </div>
 
-        <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
+        <div className="flex justify-between text-xs text-gray-400 mt-2">
           {STEPS.map((step) => (
             <span key={step.id} className="w-10 text-center">
               {step.title}
@@ -130,14 +134,14 @@ export default function CustomerOnboarding() {
                     transition={{ delay: 0.2, duration: 0.5 }}
                     className="mb-8"
                   >
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
                       <User className="w-12 h-12 text-white" />
                     </div>
                   </motion.div>
-                  <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
-                    歡迎加入 AURA
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                    歡迎加入 {BrandConfig.name}
                   </h1>
-                  <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
                     探索來自北歐的優質商品，享受便捷的購物體驗。讓我們一起開始您的精緻生活之旅。
                   </p>
                   <Button size="lg" onClick={handleNext}>
@@ -149,10 +153,10 @@ export default function CustomerOnboarding() {
 
               {currentStep === 1 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     選擇您感興趣的類別
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     選擇 3-5 個類別以獲得個人化推薦
                   </p>
                   <div className="grid grid-cols-2 gap-4">
@@ -161,21 +165,22 @@ export default function CustomerOnboarding() {
                         key={category.id}
                         hover
                         onClick={() => toggleCategory(category.id)}
-                        className={`text-center py-6 transition-all ${
+                        className={cn(
+                          'text-center py-6 transition-all relative',
                           selectedCategories.includes(category.id)
-                            ? 'border-[var(--primary)] bg-[var(--primary)]/5'
+                            ? 'border-indigo-600 bg-indigo-50'
                             : ''
-                        }`}
+                        )}
                       >
                         <div className="text-4xl mb-2">{category.icon}</div>
-                        <div className="font-medium text-[var(--text-primary)]">
+                        <div className="font-medium text-gray-900">
                           {category.name}
                         </div>
                         {selectedCategories.includes(category.id) && (
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[var(--primary)] flex items-center justify-center"
+                            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center"
                           >
                             <CheckCircle className="w-4 h-4 text-white" />
                           </motion.div>
@@ -183,7 +188,7 @@ export default function CustomerOnboarding() {
                       </Card>
                     ))}
                   </div>
-                  <div className="mt-6 text-center text-sm text-[var(--text-muted)]">
+                  <div className="mt-6 text-center text-sm text-gray-400">
                     已選擇 {selectedCategories.length}/5 個類別
                   </div>
                 </div>
@@ -191,10 +196,10 @@ export default function CustomerOnboarding() {
 
               {currentStep === 2 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     通知設定
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     選擇您想要接收的通知類型
                   </p>
                   <div className="space-y-4">
@@ -217,10 +222,10 @@ export default function CustomerOnboarding() {
                     ].map((item) => (
                       <Card key={item.key} className="flex items-center justify-between p-4">
                         <div>
-                          <div className="font-medium text-[var(--text-primary)]">
+                          <div className="font-medium text-gray-900">
                             {item.title}
                           </div>
-                          <div className="text-sm text-[var(--text-muted)]">
+                          <div className="text-sm text-gray-400">
                             {item.description}
                           </div>
                         </div>
@@ -231,11 +236,12 @@ export default function CustomerOnboarding() {
                               [item.key]: !prev[item.key as keyof typeof prev],
                             }))
                           }
-                          className={`w-14 h-8 rounded-full transition-all duration-300 relative ${
+                          className={cn(
+                            'w-14 h-8 rounded-full transition-all duration-300 relative',
                             notifications[item.key as keyof typeof notifications]
-                              ? 'bg-[var(--primary)]'
-                              : 'bg-[var(--border)]'
-                          }`}
+                              ? 'bg-indigo-600'
+                              : 'bg-gray-200'
+                          )}
                         >
                           <motion.div
                             animate={{ x: notifications[item.key as keyof typeof notifications] ? 28 : 4 }}
@@ -257,7 +263,7 @@ export default function CustomerOnboarding() {
                     transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                     className="mb-8"
                   >
-                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+                    <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
                       <CheckCircle className="w-16 h-16 text-white" />
                     </div>
                   </motion.div>
@@ -266,10 +272,10 @@ export default function CustomerOnboarding() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
                       設定完成！
                     </h2>
-                    <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
+                    <p className="text-gray-600 mb-8 max-w-md mx-auto">
                       您的個人化購物體驗已準備就緒。探索心儀的商品，開始您的北歐精緻生活吧！
                     </p>
                     <Button size="lg" onClick={handleComplete}>
@@ -285,7 +291,7 @@ export default function CustomerOnboarding() {
       </div>
 
       {currentStep > 0 && currentStep < 3 && (
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--background)] to-transparent">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-50 to-transparent">
           <div className="max-w-xl mx-auto flex gap-4">
             <Button variant="outline" onClick={handleBack} className="flex-1">
               <ArrowLeft className="w-5 h-5" />

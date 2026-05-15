@@ -35,7 +35,7 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-screen bg-[var(--surface)] border-r border-[var(--border)] transition-all duration-300 z-40",
+        "fixed left-0 top-0 h-screen bg-gray-900 border-r border-white/10 text-white/70 transition-all duration-300 z-40",
         collapsed ? "w-16" : "w-64",
         className
       )}
@@ -43,19 +43,19 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
       <div className="flex flex-col h-full">
         <div
           className={cn(
-            "flex items-center h-16 px-4 border-b border-[var(--border)]",
+            "flex items-center h-16 px-4 border-b border-white/10",
             collapsed ? "justify-center" : "justify-between"
           )}
         >
           {!collapsed && (
             <Link href="/merchant/dashboard" className="flex items-center gap-2">
-              <Store className="w-6 h-6 text-[var(--accent)]" />
-              <span className="text-lg font-bold text-[var(--primary)]">
+              <Store className="w-6 h-6 text-pink-400" />
+              <span className="text-lg font-bold text-white">
                 {BrandConfig.name}
               </span>
             </Link>
           )}
-          {collapsed && <Store className="w-6 h-6 text-[var(--accent)]" />}
+          {collapsed && <Store className="w-6 h-6 text-pink-400" />}
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -69,10 +69,10 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-200",
                   isActive
-                    ? "bg-[var(--accent)] text-[var(--primary)]"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--secondary)] hover:text-[var(--primary)]",
+                    ? "bg-pink-400 text-gray-900"
+                    : "text-white/70 hover:bg-white/10 hover:text-white",
                   collapsed && "justify-center px-0"
                 )}
               >
@@ -85,11 +85,11 @@ export function MerchantSidebar({ className }: MerchantSidebarProps) {
           })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-[var(--border)]">
+        <div className="px-3 py-4 border-t border-white/10">
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-[var(--text-secondary)] hover:bg-[var(--secondary)] hover:text-[var(--primary)] transition-all duration-200",
+              "flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors duration-200",
               collapsed && "justify-center px-0"
             )}
           >

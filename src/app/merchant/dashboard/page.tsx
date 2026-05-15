@@ -31,10 +31,10 @@ const topProducts = [
 ];
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: '待付款', color: 'bg-[var(--warning)]/10 text-[var(--warning)]' },
-  paid: { label: '已付款', color: 'bg-[var(--accent-secondary)]/10 text-blue-600' },
-  shipped: { label: '已發貨', color: 'bg-[var(--accent)]/10 text-[var(--primary)]' },
-  delivered: { label: '已完成', color: 'bg-[var(--success)]/10 text-[var(--success)]' },
+  pending: { label: '待付款', color: 'bg-amber-100 text-amber-700' },
+  paid: { label: '已付款', color: 'bg-blue-100 text-blue-700' },
+  shipped: { label: '已發貨', color: 'bg-pink-50 text-pink-700' },
+  delivered: { label: '已完成', color: 'bg-green-100 text-green-700' },
 };
 
 export default function MerchantDashboard() {
@@ -42,7 +42,7 @@ export default function MerchantDashboard() {
     <MerchantLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">儀表板</h1>
+          <h1 className="text-2xl font-bold text-gray-900">儀表板</h1>
           <div className="flex gap-3">
             <Link href="/merchant/products">
               <Button variant="primary" size="sm">
@@ -62,14 +62,14 @@ export default function MerchantDashboard() {
             >
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-[var(--radius-md)] bg-[var(--accent)]/10 flex items-center justify-center">
-                    <stat.icon className="w-5 h-5 text-[var(--accent)]" />
+                  <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center">
+                    <stat.icon className="w-5 h-5 text-pink-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-[var(--text-secondary)]">{stat.label}</p>
-                    <p className="text-xl font-bold text-[var(--text-primary)]">{stat.value}</p>
+                    <p className="text-sm text-gray-600">{stat.label}</p>
+                    <p className="text-xl font-bold text-gray-900">{stat.value}</p>
                   </div>
-                  <div className={`flex items-center text-sm ${stat.trend === 'up' ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}>
+                  <div className={`flex items-center text-sm ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                     {stat.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                     {stat.change}
                   </div>
@@ -81,13 +81,13 @@ export default function MerchantDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card padding="none">
-            <div className="p-4 border-b border-[var(--border)]">
-              <h2 className="font-semibold text-[var(--text-primary)]">近期訂單</h2>
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">近期訂單</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-sm text-[var(--text-secondary)]">
+                  <tr className="text-left text-sm text-gray-600">
                     <th className="p-4 font-medium">訂單編號</th>
                     <th className="p-4 font-medium">客戶</th>
                     <th className="p-4 font-medium">金額</th>
@@ -97,7 +97,7 @@ export default function MerchantDashboard() {
                 </thead>
                 <tbody>
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-t border-[var(--border)] hover:bg-[var(--secondary)] transition-colors">
+                    <tr key={order.id} className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
                       <td className="p-4 text-sm font-medium">{order.id}</td>
                       <td className="p-4 text-sm">{order.customer}</td>
                       <td className="p-4 text-sm font-medium">{formatPrice(order.total)}</td>
@@ -106,7 +106,7 @@ export default function MerchantDashboard() {
                           {statusLabels[order.status].label}
                         </Badge>
                       </td>
-                      <td className="p-4 text-sm text-[var(--text-muted)]">{order.time}</td>
+                      <td className="p-4 text-sm text-gray-400">{order.time}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -115,21 +115,21 @@ export default function MerchantDashboard() {
           </Card>
 
           <Card padding="none">
-            <div className="p-4 border-b border-[var(--border)]">
-              <h2 className="font-semibold text-[var(--text-primary)]">熱銷商品</h2>
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">熱銷商品</h2>
             </div>
             <div className="p-4 space-y-3">
               {topProducts.map((product, i) => (
                 <div key={product.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[var(--accent)]/10 flex items-center justify-center text-xs font-medium">
+                    <span className="w-6 h-6 rounded-full bg-pink-50 flex items-center justify-center text-xs font-medium">
                       {i + 1}
                     </span>
                     <span className="text-sm">{product.name}</span>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">{product.sales}件</p>
-                    <p className="text-xs text-[var(--text-muted)]">{formatPrice(product.revenue)}</p>
+                    <p className="text-xs text-gray-400">{formatPrice(product.revenue)}</p>
                   </div>
                 </div>
               ))}

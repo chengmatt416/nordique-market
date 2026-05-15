@@ -7,15 +7,21 @@ import { Button, Card, Badge } from '@/components/ui';
 import { formatPrice, cn, calculateDiscount } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Star, ShoppingCart, Heart, Clock, Sparkles, ShoppingBag, Zap, ArrowRight } from 'lucide-react';
-import { BrandConfig } from '@/config/brand';
+
+const categories = [
+  { name: '時尚', icon: 'ShoppingBag' },
+  { name: '電子', icon: 'Zap' },
+  { name: '家居', icon: 'Heart' },
+  { name: '美妝', icon: 'Sparkles' },
+  { name: '運動', icon: 'ShoppingBag' },
+  { name: '食品', icon: 'ShoppingBag' },
+] as const;
 
 const iconMap: Record<string, React.ReactNode> = {
   ShoppingBag: <ShoppingBag className="w-6 h-6" />,
   Zap: <Zap className="w-6 h-6" />,
   Heart: <Heart className="w-6 h-6" />,
   Sparkles: <Sparkles className="w-6 h-6" />,
-  Dumbbell: <Zap className="w-6 h-6" />,
-  Apple: <ShoppingBag className="w-6 h-6" />,
 };
 
 const sampleProducts = [
@@ -47,7 +53,7 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <div className="relative aspect-square overflow-hidden bg-[var(--secondary)]">
+          <div className="relative aspect-square overflow-hidden bg-gray-100">
             <img
               src={`https://picsum.photos/seed/${product.image}/400/400`}
               alt={product.name}
@@ -65,30 +71,30 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
                 onClick={(e) => { e.preventDefault(); }}
                 className="p-2 bg-white rounded-full hover:bg-white/90 transition-colors"
               >
-                <Heart className="w-5 h-5 text-[var(--text-secondary)]" />
+                <Heart className="w-5 h-5 text-gray-600" />
               </button>
               <button
                 onClick={(e) => { e.preventDefault(); }}
                 className="p-2 bg-white rounded-full hover:bg-white/90 transition-colors"
               >
-                <ShoppingCart className="w-5 h-5 text-[var(--primary)]" />
+                <ShoppingCart className="w-5 h-5 text-indigo-600" />
               </button>
             </motion.div>
           </div>
           <div className="p-3">
-            <h3 className="font-medium text-[var(--text-primary)] truncate text-sm leading-tight">
+            <h3 className="font-medium text-gray-900 truncate text-sm leading-tight">
               {product.name}
             </h3>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-lg font-bold text-[var(--primary)]">{formatPrice(product.price)}</span>
-              <span className="text-xs text-[var(--text-muted)] line-through">{formatPrice(product.originalPrice)}</span>
+              <span className="text-lg font-bold text-indigo-600">{formatPrice(product.price)}</span>
+              <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
             </div>
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-[var(--warning)] text-[var(--warning)]" />
-                <span className="text-xs text-[var(--text-secondary)]">{product.rating}</span>
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <span className="text-xs text-gray-500">{product.rating}</span>
               </div>
-              <span className="text-xs text-[var(--text-muted)]">已售 {product.sold}</span>
+              <span className="text-xs text-gray-400">已售 {product.sold}</span>
             </div>
           </div>
         </Card>
@@ -98,15 +104,16 @@ function ProductCard({ product, index }: { product: typeof sampleProducts[0]; in
 }
 
 export default function HomePage() {
-  const [countdown, setCountdown] = useState({ h: 11, m: 59, s: 59 });
+  const [countdown] = useState({ h: 11, m: 59, s: 59 });
 
   return (
     <ClientLayout>
       <div className="space-y-8">
-        <section className="relative bg-gradient-to-br from-[var(--primary)] via-[var(--primary)] to-[#2d2d4a] text-white rounded-2xl p-8 md:p-12 overflow-hidden">
+
+        <section className="relative bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-2xl p-8 md:p-12 overflow-hidden">
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute -top-20 -right-20 w-80 h-80 bg-[var(--accent)] rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-[var(--accent-secondary)] rounded-full blur-3xl" />
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-pink-400 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-pink-400 rounded-full blur-3xl" />
           </div>
           <div className="relative z-10">
             <Badge variant="accent" className="mb-4 bg-white/20 text-white border-0">
@@ -120,12 +127,12 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/search">
-                <Button variant="secondary" className="bg-white text-[var(--primary)] hover:bg-white/90">
+                <Button variant="secondary" className="bg-white text-indigo-600 hover:bg-white/90">
                   開始選購
                 </Button>
               </Link>
               <Link href="/auth/signin">
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[var(--primary)]">
+                <Button variant="outline" className="border border-white/30 text-white hover:bg-white hover:text-indigo-600">
                   開店當老闆
                 </Button>
               </Link>
@@ -135,10 +142,10 @@ export default function HomePage() {
 
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">商品分類</h2>
+            <h2 className="text-xl font-bold text-gray-900">商品分類</h2>
           </div>
           <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-6 md:overflow-visible">
-            {BrandConfig.categories.map((category, index) => (
+            {categories.map((category, index) => (
               <motion.div
                 key={category.name}
                 initial={{ opacity: 0, y: 10 }}
@@ -151,13 +158,10 @@ export default function HomePage() {
                     padding="md"
                     className="flex flex-col items-center gap-2 min-w-[100px] cursor-pointer text-center"
                   >
-                    <div className={cn(
-                      'w-12 h-12 rounded-full flex items-center justify-center',
-                      category.color === 'accent' ? 'bg-[var(--accent)]/20 text-[var(--primary)]' : 'bg-[var(--accent-secondary)]/20 text-[var(--primary)]'
-                    )}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-50 text-indigo-600">
                       {iconMap[category.icon] || <ShoppingBag className="w-6 h-6" />}
                     </div>
-                    <span className="text-sm font-medium text-[var(--text-primary)] whitespace-nowrap">
+                    <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
                       {category.name}
                     </span>
                   </Card>
@@ -167,25 +171,29 @@ export default function HomePage() {
           </div>
         </section>
 
-        <Card padding="md" className="bg-gradient-to-r from-[var(--accent)]/10 via-[var(--accent)]/5 to-[var(--accent-secondary)]/10 border border-[var(--accent)]/30">
+        <Card padding="md" className="bg-pink-50 border-pink-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[var(--accent)] flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-pink-400 flex items-center justify-center">
                 <Clock className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-lg flex items-center gap-2">
+                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                   限時閃購
                   <Badge variant="error" className="text-xs">只剩 12 小時</Badge>
                 </h3>
-                <p className="text-sm text-[var(--text-secondary)]">精選商品最低 5 折起</p>
+                <p className="text-sm text-gray-500">精選商品最低 5 折起</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex gap-1">
-                {[`${countdown.h}`, `${countdown.m}`, `${countdown.s}`].map((t, i) => (
-                  <span key={i} className="bg-[var(--primary)] text-white px-3 py-2 rounded-lg font-mono font-bold text-lg min-w-[48px] text-center">
-                    {t.padStart(2, '0')}
+                {[
+                  String(countdown.h).padStart(2, '0'),
+                  String(countdown.m).padStart(2, '0'),
+                  String(countdown.s).padStart(2, '0'),
+                ].map((t, i) => (
+                  <span key={i} className="bg-gray-900 text-white px-3 py-2 rounded-lg font-mono font-bold text-lg min-w-[48px] text-center">
+                    {t}
                   </span>
                 ))}
               </div>
@@ -198,8 +206,8 @@ export default function HomePage() {
 
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">熱門商品</h2>
-            <Link href="/search" className="text-sm text-[var(--accent)] hover:underline flex items-center gap-1">
+            <h2 className="text-xl font-bold text-gray-900">熱門商品</h2>
+            <Link href="/search" className="text-sm text-indigo-600 hover:underline flex items-center gap-1">
               查看全部 <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -212,7 +220,7 @@ export default function HomePage() {
 
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">為您推薦</h2>
+            <h2 className="text-xl font-bold text-gray-900">為您推薦</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {sampleProducts.slice(4).map((product, index) => (
@@ -220,6 +228,7 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
       </div>
     </ClientLayout>
   );

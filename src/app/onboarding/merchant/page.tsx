@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card, Input } from '@/components/ui';
+import { BrandConfig } from '@/config/brand';
+import { cn } from '@/lib/utils';
 import {
   Store,
   Info,
@@ -122,20 +124,20 @@ export default function MerchantOnboarding() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="text-center max-w-md"
         >
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
             提交成功！
           </h1>
-          <p className="text-[var(--text-secondary)] mb-8">
+          <p className="text-gray-600 mb-8">
             您的商店申請已提交審核。我們將在 1-3 個工作天內完成審核，並透過電子郵件通知您結果。
           </p>
           <Button onClick={() => router.push('/')}>
@@ -147,32 +149,34 @@ export default function MerchantOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="w-full max-w-2xl mx-auto px-6 pt-12 pb-8">
         <div className="flex items-center justify-between mb-8">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={cn(
+                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
                   index <= currentStep
-                    ? 'bg-[var(--primary)] text-white'
-                    : 'bg-[var(--border)] text-[var(--text-muted)]'
-                }`}
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                )}
               >
                 <step.icon className="w-5 h-5" />
               </div>
               {index < STEPS.length - 1 && (
                 <div
-                  className={`w-8 h-0.5 mx-1 transition-all duration-300 ${
-                    index < currentStep ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'
-                  }`}
+                  className={cn(
+                    'w-8 h-0.5 mx-1 transition-all duration-300',
+                    index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
+                  )}
                 />
               )}
             </div>
           ))}
         </div>
 
-        <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
+        <div className="flex justify-between text-xs text-gray-400 mt-2">
           {STEPS.map((step) => (
             <span key={step.id} className="text-center" style={{ width: '60px' }}>
               {step.title}
@@ -200,15 +204,15 @@ export default function MerchantOnboarding() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                   >
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
                       <Store className="w-12 h-12 text-white" />
                     </div>
                   </motion.div>
-                  <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
                     開啟您的商店
                   </h1>
-                  <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
-                    加入 AURA 平台，觸及更多顧客，提升銷售業績
+                  <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                    加入 {BrandConfig.name} 平台，觸及更多顧客，提升銷售業績
                   </p>
                   <div className="text-left max-w-md mx-auto space-y-4 mb-8">
                     {[
@@ -224,12 +228,12 @@ export default function MerchantOnboarding() {
                         transition={{ delay: 0.3 + i * 0.1 }}
                         className="flex items-start gap-3"
                       >
-                        <div className="w-6 h-6 rounded-full bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CheckCircle className="w-4 h-4 text-[var(--primary)]" />
+                        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <CheckCircle className="w-4 h-4 text-indigo-600" />
                         </div>
                         <div>
-                          <div className="font-medium text-[var(--text-primary)]">{item.title}</div>
-                          <div className="text-sm text-[var(--text-muted)]">{item.desc}</div>
+                          <div className="font-medium text-gray-900">{item.title}</div>
+                          <div className="text-sm text-gray-400">{item.desc}</div>
                         </div>
                       </motion.div>
                     ))}
@@ -243,10 +247,10 @@ export default function MerchantOnboarding() {
 
               {currentStep === 1 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     商店資訊
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     設定您的商店名稱和描述
                   </p>
                   <div className="space-y-4">
@@ -257,16 +261,16 @@ export default function MerchantOnboarding() {
                       onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
                     />
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-[var(--text-primary)]">
+                      <label className="text-sm font-medium text-gray-900">
                         商店描述
                       </label>
                       <textarea
                         placeholder="介紹您的商店和品牌理念..."
                         value={formData.storeDescription}
                         onChange={(e) => setFormData((prev) => ({ ...prev, storeDescription: e.target.value }))}
-                        className="w-full h-32 px-3 py-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-white text-[var(--text-primary)] placeholder:text-[var(--text-muted)] transition-all duration-150 focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 resize-none"
+                        className="w-full h-32 px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 transition-all duration-150 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 resize-none"
                       />
-                      <span className="text-xs text-[var(--text-muted)]">
+                      <span className="text-xs text-gray-400">
                         至少 10 個字元
                       </span>
                     </div>
@@ -276,16 +280,16 @@ export default function MerchantOnboarding() {
 
               {currentStep === 2 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     上傳商店標誌
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     為您的商店上傳一個醒目的標誌
                   </p>
                   <Card className="p-8">
                     {formData.logo ? (
                       <div className="relative">
-                        <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-[var(--secondary)]">
+                        <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-50">
                           <img
                             src={formData.logo}
                             alt="商店標誌"
@@ -294,23 +298,23 @@ export default function MerchantOnboarding() {
                         </div>
                         <button
                           onClick={() => setFormData((prev) => ({ ...prev, logo: null }))}
-                          className="absolute top-0 right-1/2 translate-x-12 w-8 h-8 rounded-full bg-[var(--error)] text-white flex items-center justify-center hover:brightness-110"
+                          className="absolute top-0 right-1/2 translate-x-12 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center hover:brightness-110"
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        <p className="text-center text-sm text-[var(--text-muted)] mt-4">
+                        <p className="text-center text-sm text-gray-400 mt-4">
                           點擊 X 移除圖片
                         </p>
                       </div>
                     ) : (
                       <label className="flex flex-col items-center cursor-pointer">
-                        <div className="w-32 h-32 rounded-full border-2 border-dashed border-[var(--border)] flex items-center justify-center hover:border-[var(--primary)] transition-colors">
-                          <Upload className="w-10 h-10 text-[var(--text-muted)]" />
+                        <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
+                          <Upload className="w-10 h-10 text-gray-400" />
                         </div>
-                        <span className="mt-4 text-sm text-[var(--text-primary)]">
+                        <span className="mt-4 text-sm text-gray-900">
                           點擊或拖曳圖片到此處上傳
                         </span>
-                        <span className="text-xs text-[var(--text-muted)] mt-1">
+                        <span className="text-xs text-gray-400 mt-1">
                           支援 JPG、PNG，最大 5MB
                         </span>
                         <input
@@ -327,10 +331,10 @@ export default function MerchantOnboarding() {
 
               {currentStep === 3 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     聯絡資訊
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     設定商店的聯絡方式以便顧客和平台與您聯繫
                   </p>
                   <div className="space-y-4">
@@ -363,10 +367,10 @@ export default function MerchantOnboarding() {
 
               {currentStep === 4 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     物流設定
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     選擇您提供的配送方式
                   </p>
                   <div className="space-y-4 mb-6">
@@ -375,27 +379,29 @@ export default function MerchantOnboarding() {
                         key={method.id}
                         hover
                         onClick={() => toggleShippingMethod(method.id)}
-                        className={`p-4 cursor-pointer transition-all ${
+                        className={cn(
+                          'p-4 cursor-pointer transition-all',
                           formData.shippingMethods.includes(method.id)
-                            ? 'border-[var(--primary)] bg-[var(--primary)]/5'
+                            ? 'border-indigo-600 bg-indigo-50'
                             : ''
-                        }`}
+                        )}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium text-[var(--text-primary)]">
+                            <div className="font-medium text-gray-900">
                               {method.name}
                             </div>
-                            <div className="text-sm text-[var(--text-muted)]">
+                            <div className="text-sm text-gray-400">
                               {method.description}
                             </div>
                           </div>
                           <div
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                            className={cn(
+                              'w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
                               formData.shippingMethods.includes(method.id)
-                                ? 'border-[var(--primary)] bg-[var(--primary)]'
-                                : 'border-[var(--border)]'
-                            }`}
+                                ? 'border-indigo-600 bg-indigo-600'
+                                : 'border-gray-200'
+                            )}
                           >
                             {formData.shippingMethods.includes(method.id) && (
                               <CheckCircle className="w-4 h-4 text-white" />
@@ -418,26 +424,26 @@ export default function MerchantOnboarding() {
 
               {currentStep === 5 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     確認提交
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     請確認您的商店資訊
                   </p>
                   <Card className="p-6 space-y-4">
-                    <div className="flex items-center gap-4 pb-4 border-b border-[var(--border)]">
-                      <div className="w-16 h-16 rounded-full bg-[var(--secondary)] overflow-hidden flex-shrink-0">
+                    <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
+                      <div className="w-16 h-16 rounded-full bg-gray-50 overflow-hidden flex-shrink-0">
                         {formData.logo ? (
                           <img src={formData.logo} alt="商店標誌" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Store className="w-8 h-8 text-[var(--text-muted)]" />
+                            <Store className="w-8 h-8 text-gray-400" />
                           </div>
                         )}
                       </div>
                       <div>
-                        <div className="font-bold text-[var(--text-primary)]">{formData.storeName || '未設定'}</div>
-                        <div className="text-sm text-[var(--text-muted)] line-clamp-2">
+                        <div className="font-bold text-gray-900">{formData.storeName || '未設定'}</div>
+                        <div className="text-sm text-gray-400 line-clamp-2">
                           {formData.storeDescription || '未設定'}
                         </div>
                       </div>
@@ -445,17 +451,17 @@ export default function MerchantOnboarding() {
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <div className="text-[var(--text-muted)]">電子郵件</div>
-                        <div className="text-[var(--text-primary)]">{formData.email}</div>
+                        <div className="text-gray-400">電子郵件</div>
+                        <div className="text-gray-900">{formData.email}</div>
                       </div>
                       <div>
-                        <div className="text-[var(--text-muted)]">電話</div>
-                        <div className="text-[var(--text-primary)]">{formData.phone}</div>
+                        <div className="text-gray-400">電話</div>
+                        <div className="text-gray-900">{formData.phone}</div>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-[var(--border)]">
-                      <div className="text-[var(--text-muted)] text-sm mb-2">配送方式</div>
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-gray-400 text-sm mb-2">配送方式</div>
                       <div className="flex flex-wrap gap-2">
                         {formData.shippingMethods.length > 0 ? (
                           formData.shippingMethods.map((id) => {
@@ -463,22 +469,22 @@ export default function MerchantOnboarding() {
                             return (
                               <span
                                 key={id}
-                                className="px-3 py-1 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-sm"
+                                className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 text-sm"
                               >
                                 {method?.name}
                               </span>
                             );
                           })
                         ) : (
-                          <span className="text-[var(--text-muted)]">未設定</span>
+                          <span className="text-gray-400">未設定</span>
                         )}
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-[var(--border)]">
+                    <div className="pt-4 border-t border-gray-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-[var(--text-muted)]">基本運費</span>
-                        <span className="font-bold text-[var(--text-primary)]">
+                        <span className="text-gray-400">基本運費</span>
+                        <span className="font-bold text-gray-900">
                           NT$ {formData.baseShippingFee || 0}
                         </span>
                       </div>
@@ -491,7 +497,7 @@ export default function MerchantOnboarding() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--background)] to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-50 to-transparent">
         <div className="max-w-xl mx-auto flex gap-4">
           {currentStep > 0 && (
             <Button variant="outline" onClick={handleBack} className="flex-1">

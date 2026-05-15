@@ -1,56 +1,40 @@
 'use client';
-
-import { forwardRef, ButtonHTMLAttributes } from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
-
-interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'children'> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
-  children?: React.ReactNode;
 }
 
-const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-[var(--primary)] text-white hover:brightness-110',
-  secondary: 'bg-[var(--accent)] text-[var(--primary)] hover:brightness-110',
-  outline: 'border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white',
-  ghost: 'text-[var(--text-secondary)] hover:bg-[var(--border)]',
+const variants = {
+  primary: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm',
+  secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+  outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50',
+  ghost: 'text-gray-600 hover:bg-gray-100',
 };
 
-const sizes: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-base',
-  lg: 'h-12 px-6 text-lg',
+const sizes = {
+  sm: 'h-8 px-3 text-xs',
+  md: 'h-10 px-4 text-sm',
+  lg: 'h-12 px-6 text-base',
 };
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }, ref) => {
-    return (
-      <motion.button
-        ref={ref}
-        className={cn(
-          'inline-flex items-center justify-center gap-2 font-medium rounded-[var(--radius-sm)] transition-all duration-150',
-          'active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100',
-          variants[variant],
-          sizes[size],
-          className
-        )}
-        disabled={disabled || loading}
-        whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
-        {...props}
-      >
-        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-        {children}
-      </motion.button>
-    );
-  }
-);
-
-Button.displayName = 'Button';
-
-export { Button };
+export function Button({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }: ButtonProps) {
+  return (
+    <button
+      className={cn(
+        'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+      {children}
+    </button>
+  );
+}

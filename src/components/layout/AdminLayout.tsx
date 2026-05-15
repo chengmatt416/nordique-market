@@ -11,7 +11,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, className }: AdminLayoutProps) {
   return (
-    <div className="min-h-screen bg-[var(--secondary)]">
+    <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
 
       <main

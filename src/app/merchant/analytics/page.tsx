@@ -39,17 +39,17 @@ export default function MerchantAnalytics() {
     <MerchantLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">數據分析</h1>
-          <div className="flex gap-1 p-1 bg-[var(--secondary)] rounded-[var(--radius-md)]">
+          <h1 className="text-2xl font-bold text-gray-900">數據分析</h1>
+          <div className="flex gap-1 p-1 bg-gray-50 rounded-lg">
             {dateRanges.map((range) => (
               <button
                 key={range}
                 onClick={() => setSelectedRange(range)}
                 className={cn(
-                  'px-4 py-2 text-sm font-medium rounded-[var(--radius-sm)] transition-all',
+                  'px-4 py-2 text-sm font-medium rounded-md transition-all',
                   selectedRange === range
-                    ? 'bg-white text-[var(--text-primary)] shadow-sm'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
                 )}
               >
                 {range}
@@ -68,12 +68,12 @@ export default function MerchantAnalytics() {
             >
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-[var(--radius-md)] bg-[var(--accent)]/10 flex items-center justify-center text-lg">
+                  <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-lg">
                     {stat.icon}
                   </div>
                   <div>
-                    <p className="text-sm text-[var(--text-secondary)]">{stat.label}</p>
-                    <p className="text-xl font-bold text-[var(--text-primary)]">
+                    <p className="text-sm text-gray-600">{stat.label}</p>
+                    <p className="text-xl font-bold text-gray-900">
                       {stat.prefix || ''}{typeof stat.value === 'number' && stat.prefix ? formatPrice(stat.value).replace('NT$', '') : stat.value}
                     </p>
                   </div>
@@ -84,23 +84,23 @@ export default function MerchantAnalytics() {
         </div>
 
         <Card className="p-6">
-          <div className="h-64 rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--accent)]/5 via-[var(--accent)]/10 to-[var(--accent)]/20 flex items-center justify-center">
+          <div className="h-64 rounded-lg bg-gradient-to-br from-pink-50 via-pink-100/50 to-pink-100 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-lg font-medium text-[var(--text-secondary)]">銷售趨勢圖</p>
-              <p className="text-sm text-[var(--text-muted)] mt-1">銷售數據視覺化展示區域</p>
+              <p className="text-lg font-medium text-gray-600">銷售趨勢圖</p>
+              <p className="text-sm text-gray-400 mt-1">銷售數據視覺化展示區域</p>
             </div>
           </div>
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card padding="none">
-            <div className="p-4 border-b border-[var(--border)]">
-              <h2 className="font-semibold text-[var(--text-primary)]">熱銷商品</h2>
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">熱銷商品</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-sm text-[var(--text-secondary)]">
+                  <tr className="text-left text-sm text-gray-600">
                     <th className="p-4 font-medium">排名</th>
                     <th className="p-4 font-medium">商品名稱</th>
                     <th className="p-4 font-medium">銷售</th>
@@ -112,10 +112,10 @@ export default function MerchantAnalytics() {
                   {topProducts.map((product) => (
                     <tr
                       key={product.rank}
-                      className="border-t border-[var(--border)] hover:bg-[var(--secondary)] transition-colors"
+                      className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
                     >
                       <td className="p-4">
-                        <span className="w-6 h-6 rounded-full bg-[var(--accent)]/10 flex items-center justify-center text-xs font-medium">
+                        <span className="w-6 h-6 rounded-full bg-pink-50 flex items-center justify-center text-xs font-medium">
                           {product.rank}
                         </span>
                       </td>
@@ -126,7 +126,7 @@ export default function MerchantAnalytics() {
                         <div
                           className={cn(
                             'flex items-center gap-1 text-sm',
-                            product.trend >= 0 ? 'text-[var(--success)]' : 'text-[var(--error)]'
+                            product.trend >= 0 ? 'text-green-500' : 'text-red-500'
                           )}
                         >
                           {product.trend >= 0 ? (
@@ -145,24 +145,24 @@ export default function MerchantAnalytics() {
           </Card>
 
           <Card padding="none">
-            <div className="p-4 border-b border-[var(--border)]">
-              <h2 className="font-semibold text-[var(--text-primary)]">類別分布</h2>
+            <div className="p-4 border-b border-gray-200">
+              <h2 className="font-semibold text-gray-900">類別分布</h2>
             </div>
             <div className="p-4 space-y-4">
               {categories.map((category) => (
                 <div key={category.name} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-[var(--text-primary)]">{category.name}</span>
-                    <span className="text-[var(--text-secondary)]">
+                    <span className="text-gray-900">{category.name}</span>
+                    <span className="text-gray-600">
                       {category.count}件 ({category.percentage}%)
                     </span>
                   </div>
-                  <div className="h-2 bg-[var(--secondary)] rounded-full overflow-hidden">
+                  <div className="h-2 bg-gray-50 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${category.percentage}%` }}
                       transition={{ duration: 0.8, ease: 'easeOut' }}
-                      className="h-full bg-[var(--accent)] rounded-full"
+                      className="h-full bg-pink-400 rounded-full"
                     />
                   </div>
                 </div>

@@ -1,48 +1,103 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, X, Clock, Star, ShoppingCart, SlidersHorizontal } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Search, X, Clock, Star, SlidersHorizontal } from 'lucide-react';
 import { Button, Badge, Card } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
-import { BrandConfig } from '@/config/brand';
 
-const recentSearches = ['陶瓷花瓶', '北歐桌燈', '羊毛抱枕'];
+const recentSearches = ['北歐風沙發', '極簡書桌', '手工陶器', '亞麻襯衫', '藍牙耳機'];
 
-const allCategories = BrandConfig.categories.map((c) => c.name);
+const trendingProducts = [
+  { id: 1, name: '極簡實木書桌', price: 4200, image: 101, category: '家具', rating: 4.8, sold: 342 },
+  { id: 2, name: '手工編織羊毛毯', price: 1880, image: 102, category: '家居', rating: 4.9, sold: 156 },
+  { id: 3, name: '北歐風落地燈', price: 2600, image: 103, category: '家居', rating: 4.7, sold: 89 },
+  { id: 4, name: '手工編織帽', price: 980, image: 104, category: '時尚', rating: 4.6, sold: 203 },
+  { id: 5, name: '亞麻寬版襯衫', price: 1580, image: 105, category: '時尚', rating: 4.8, sold: 167 },
+  { id: 6, name: '藍牙降噪耳機 Pro', price: 3290, image: 106, category: '電子產品', rating: 4.9, sold: 512 },
+  { id: 7, name: '天然大豆香氛蠟燭', price: 680, image: 107, category: '家居', rating: 4.5, sold: 421 },
+  { id: 8, name: '無線充電板', price: 890, image: 108, category: '電子產品', rating: 4.6, sold: 278 },
+  { id: 9, name: '手工皮革托特包', price: 2800, image: 109, category: '時尚', rating: 4.7, sold: 95 },
+  { id: 10, name: '陶瓷手沖咖啡壺', price: 1350, image: 110, category: '家居', rating: 4.8, sold: 183 },
+  { id: 11, name: '便攜藍牙喇叭', price: 1590, image: 111, category: '電子產品', rating: 4.5, sold: 334 },
+  { id: 12, name: '可調節升降茶几', price: 5400, image: 112, category: '家具', rating: 4.9, sold: 67 },
+];
 
-const allProducts = [
-  { id: '1', name: '北歐簡約陶瓷花瓶', price: 1299, originalPrice: 1999, rating: 4.8, reviews: 236, image: 'vase-1', category: '家居' },
-  { id: '2', name: '純手工羊毛抱枕', price: 899, originalPrice: 1499, rating: 4.9, reviews: 189, image: 'pillow-2', category: '家居' },
-  { id: '3', name: '實木多功能收納架', price: 2599, originalPrice: 3299, rating: 4.7, reviews: 156, image: 'shelf-3', category: '家居' },
-  { id: '4', name: 'LED智能北歐桌燈', price: 1899, originalPrice: 2499, rating: 4.6, reviews: 98, image: 'lamp-4', category: '電子產品' },
-  { id: '5', name: '極簡純棉床組', price: 3299, originalPrice: 4599, rating: 4.9, reviews: 312, image: 'bed-5', category: '家居' },
-  { id: '6', name: '創意幾何地毯', price: 2199, originalPrice: 2999, rating: 4.5, reviews: 145, image: 'rug-6', category: '家居' },
-  { id: '7', name: '質感皮革收納盒', price: 799, originalPrice: 1199, rating: 4.7, reviews: 203, image: 'box-7', category: '家居' },
-  { id: '8', name: '不鏽鋼保溫水瓶', price: 599, originalPrice: 899, rating: 4.8, reviews: 427, image: 'bottle-8', category: '時尚' },
-  { id: '9', name: '北歐風格掛鐘', price: 1599, originalPrice: 2199, rating: 4.6, reviews: 167, image: 'clock-9', category: '家居' },
-  { id: '10', name: '多功能事務箱', price: 699, originalPrice: 999, rating: 4.4, reviews: 112, image: 'organizer-10', category: '時尚' },
-  { id: '11', name: '輕量羽絨外套', price: 2899, originalPrice: 3899, rating: 4.7, reviews: 234, image: 'jacket-11', category: '時尚' },
-  { id: '12', name: '智能手環Pro', price: 1999, originalPrice: 2499, rating: 4.5, reviews: 456, image: 'band-12', category: '電子產品' },
+const searchResults = [
+  { id: 1, name: '極簡實木書桌', price: 4200, originalPrice: 5600, image: 101, category: '家具', rating: 4.8, sold: 342 },
+  { id: 2, name: '北歐風落地燈', price: 2600, image: 103, category: '家居', rating: 4.7, sold: 89 },
+  { id: 3, name: '藍牙降噪耳機 Pro', price: 3290, originalPrice: 4200, image: 106, category: '電子產品', rating: 4.9, sold: 512 },
+  { id: 4, name: '手工編織羊毛毯', price: 1880, image: 102, category: '家居', rating: 4.9, sold: 156 },
+  { id: 5, name: '手工皮革托特包', price: 2800, originalPrice: 3600, image: 109, category: '時尚', rating: 4.7, sold: 95 },
+  { id: 6, name: '陶瓷手沖咖啡壺', price: 1350, image: 110, category: '家居', rating: 4.8, sold: 183 },
+  { id: 7, name: '亞麻寬版襯衫', price: 1580, originalPrice: 1980, image: 105, category: '時尚', rating: 4.8, sold: 167 },
+  { id: 8, name: '無線充電板', price: 890, image: 108, category: '電子產品', rating: 4.6, sold: 278 },
+  { id: 9, name: '便攜藍牙喇叭', price: 1590, image: 111, category: '電子產品', rating: 4.5, sold: 334 },
+  { id: 10, name: '天然大豆香氛蠟燭', price: 680, image: 107, category: '家居', rating: 4.5, sold: 421 },
+  { id: 11, name: '可調節升降茶几', price: 5400, image: 112, category: '家具', rating: 4.9, sold: 67 },
+  { id: 12, name: '手工編織帽', price: 980, image: 104, category: '時尚', rating: 4.6, sold: 203 },
+];
+
+const categories = [
+  { id: 'furniture', name: '家具', count: 24 },
+  { id: 'home', name: '家居', count: 56 },
+  { id: 'fashion', name: '時尚', count: 38 },
+  { id: 'electronics', name: '電子產品', count: 31 },
 ];
 
 const sortOptions = [
-  { value: 'recommended', label: '推薦' },
-  { value: 'newest', label: '最新' },
-  { value: 'price-low', label: '價格低到高' },
-  { value: 'price-high', label: '價格高到低' },
+  { value: 'relevance', label: '相關度' },
+  { value: 'price-asc', label: '價格由低到高' },
+  { value: 'price-desc', label: '價格由高到低' },
+  { value: 'rating', label: '評價最高' },
+  { value: 'sales', label: '銷量最多' },
 ];
+
+function ProductCard({ product }: { product: typeof searchResults[0] }) {
+  return (
+    <Link href={`/client/product/${product.id}`}>
+      <Card hover padding="none" className="overflow-hidden group">
+        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+          <img
+            src={`https://picsum.photos/seed/${product.image}/400/400`}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          {product.originalPrice && (
+            <div className="absolute top-2 left-2">
+              <Badge variant="accent">
+                -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+              </Badge>
+            </div>
+          )}
+        </div>
+        <div className="p-3">
+          <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
+          <div className="flex items-center gap-1 mt-1">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-xs text-gray-600">{product.rating}</span>
+            <span className="text-xs text-gray-400">· 已售{product.sold}</span>
+          </div>
+          <div className="flex items-baseline gap-2 mt-1.5">
+            <span className="text-base font-bold text-gray-900">{formatPrice(product.price)}</span>
+            {product.originalPrice && (
+              <span className="text-xs text-gray-400 line-through">{formatPrice(product.originalPrice)}</span>
+            )}
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
+}
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
-  const [results, setResults] = useState<typeof allProducts>([]);
-  const [sortBy, setSortBy] = useState('recommended');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -50,219 +105,245 @@ export default function SearchPage() {
     inputRef.current?.focus();
   }, []);
 
-  const handleSearch = () => {
-    setHasSearched(true);
-    let filtered = allProducts;
-    if (query.trim()) {
-      filtered = filtered.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+  const handleSearch = (value: string) => {
+    setQuery(value);
+    if (value.trim()) {
+      setHasSearched(true);
     }
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter((p) => selectedCategories.includes(p.category));
-    }
-    if (minPrice) {
-      filtered = filtered.filter((p) => p.price >= Number(minPrice));
-    }
-    if (maxPrice) {
-      filtered = filtered.filter((p) => p.price <= Number(maxPrice));
-    }
-    switch (sortBy) {
-      case 'price-low': filtered.sort((a, b) => a.price - b.price); break;
-      case 'price-high': filtered.sort((a, b) => b.price - a.price); break;
-      case 'newest': filtered.sort((a, b) => b.id.localeCompare(a.id)); break;
-      default: break;
-    }
-    setResults(filtered);
   };
 
-  const handleRecentSearch = (term: string) => {
-    setQuery(term);
-    setHasSearched(true);
-    const filtered = allProducts.filter((p) => p.name.toLowerCase().includes(term.toLowerCase()));
-    setResults(filtered);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && query.trim()) {
+      setHasSearched(true);
+    }
   };
 
-  const toggleCategory = (cat: string) => {
+  const toggleCategory = (id: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
     );
+  };
+
+  const filteredResults = searchResults.filter((product) => {
+    if (selectedCategories.length === 0) return true;
+    const catMap: Record<string, string> = { furniture: '家具', home: '家居', fashion: '時尚', electronics: '電子產品' };
+    return selectedCategories.some((c) => catMap[c] === product.category);
+  });
+
+  const clearAll = () => {
+    setQuery('');
+    setHasSearched(false);
+    setSelectedCategories([]);
+    setPriceMin('');
+    setPriceMax('');
+    setSortBy('relevance');
+    inputRef.current?.focus();
   };
 
   return (
     <ClientLayout>
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="搜尋商品..."
-              className="w-full h-12 pl-10 pr-4 bg-white border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--accent)] text-[var(--text-primary)]"
-            />
-            {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-[var(--text-muted)]" />
-              </button>
-            )}
-          </div>
-          <Button onClick={handleSearch} className="h-12 px-6">搜尋</Button>
-          <Button variant="ghost" onClick={() => setShowFilters(!showFilters)} className="h-12 px-3 md:hidden">
-            <SlidersHorizontal className="w-5 h-5" />
-          </Button>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="relative mb-6">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="搜尋商品、品牌、類別..."
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full h-14 pl-12 pr-12 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+          />
+          {query && (
+            <button
+              onClick={clearAll}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {!hasSearched ? (
-          <div className="space-y-6">
-            <Card padding="md">
-              <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-3 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> 最近搜尋
-              </h3>
+          <>
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-4 h-4 text-gray-400" />
+                <h2 className="text-sm font-medium text-gray-600">最近搜尋</h2>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {recentSearches.map((term) => (
+                {recentSearches.map((item) => (
                   <button
-                    key={term}
-                    onClick={() => handleRecentSearch(term)}
-                    className="px-3 py-1.5 bg-[var(--secondary)] rounded-full text-sm hover:bg-[var(--accent)]/20 transition-colors"
+                    key={item}
+                    onClick={() => handleSearch(item)}
+                    className="px-4 py-2 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-pink-50 hover:text-pink-600 transition-colors"
                   >
-                    {term}
-                  </button>
-                ))}
-              </div>
-            </Card>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-4">分類</h3>
-              <div className="flex flex-wrap gap-3">
-                {allCategories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => { setSelectedCategories([cat]); setHasSearched(true); setResults(allProducts.filter((p) => p.category === cat)); }}
-                    className="px-4 py-2 bg-white border border-[var(--border)] rounded-lg hover:border-[var(--accent)] transition-colors"
-                  >
-                    {cat}
+                    {item}
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">熱門商品</h3>
+              <h2 className="text-base font-semibold text-gray-900 mb-4">熱門商品</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {allProducts.slice(0, 8).map((product) => (
-                  <Link key={product.id} href={`/client/product/${product.id}`}>
-                    <Card hover padding="none" className="overflow-hidden">
-                      <div className="aspect-square">
-                        <img src={`https://picsum.photos/seed/${product.image}/400/400`} alt={product.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="p-3">
-                        <p className="text-sm font-medium truncate">{product.name}</p>
-                        <p className="text-base font-bold text-[var(--primary)] mt-1">{formatPrice(product.price)}</p>
-                      </div>
-                    </Card>
-                  </Link>
+                {trendingProducts.map((product) => (
+                  <ProductCard key={product.id} product={product as any} />
                 ))}
               </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex gap-6">
-            <div className={`${showFilters ? 'block' : 'hidden'} md:block w-64 flex-shrink-0 space-y-4`}>
-              <Card padding="md">
-                <h4 className="font-medium mb-3">分類</h4>
-                <div className="space-y-2">
-                  {allCategories.map((cat) => (
-                    <label key={cat} className="flex items-center gap-2 cursor-pointer">
+            <div className="hidden lg:block w-56 shrink-0">
+              <div className="sticky top-[88px]">
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4">商品分類</h3>
+                  <div className="space-y-2.5">
+                    {categories.map((cat) => (
+                      <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm text-gray-600 group-hover:text-gray-900 flex-1">{cat.name}</span>
+                        <span className="text-xs text-gray-400">{cat.count}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 pt-4 border-t border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">價格範圍</h4>
+                    <div className="flex items-center gap-2">
                       <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(cat)}
-                        onChange={() => toggleCategory(cat)}
-                        className="rounded border-[var(--border)]"
+                        type="number"
+                        placeholder="最低"
+                        value={priceMin}
+                        onChange={(e) => setPriceMin(e.target.value)}
+                        className="w-full h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       />
-                      <span className="text-sm">{cat}</span>
-                    </label>
-                  ))}
-                </div>
-              </Card>
+                      <span className="text-gray-400 text-sm shrink-0">–</span>
+                      <input
+                        type="number"
+                        placeholder="最高"
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        className="w-full h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
 
-              <Card padding="md">
-                <h4 className="font-medium mb-3">價格區間</h4>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    placeholder="最低"
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded text-sm"
-                  />
-                  <span className="self-center">-</span>
-                  <input
-                    type="number"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    placeholder="最高"
-                    className="w-full px-3 py-2 border border-[var(--border)] rounded text-sm"
-                  />
-                </div>
-              </Card>
-
-              <Button onClick={handleSearch} className="w-full">套用篩選</Button>
-            </div>
-
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-[var(--text-secondary)]">找到 {results.length} 件商品</p>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-[var(--border)] rounded text-sm bg-white"
-                >
-                  {sortOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {results.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {results.map((product) => (
-                    <Link key={product.id} href={`/client/product/${product.id}`}>
-                      <Card hover padding="none" className="overflow-hidden">
-                        <div className="relative aspect-square">
-                          <img src={`https://picsum.photos/seed/${product.image}/400/400`} alt={product.name} className="w-full h-full object-cover" />
-                          <Badge className="absolute top-2 left-2" variant="error">
-                            {Math.round((1 - product.price / product.originalPrice) * 100)}% OFF
-                          </Badge>
-                        </div>
-                        <div className="p-3">
-                          <p className="text-sm font-medium truncate">{product.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-base font-bold text-[var(--primary)]">{formatPrice(product.price)}</span>
-                            <span className="text-xs text-[var(--text-muted)] line-through">{formatPrice(product.originalPrice)}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Star className="w-3 h-3 fill-[var(--warning)] text-[var(--warning)]" />
-                            <span className="text-xs text-[var(--text-secondary)]">{product.rating} ({product.reviews})</span>
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-[var(--text-secondary)]">找不到符合條件的商品</p>
-                  <Button variant="ghost" onClick={() => { setQuery(''); setHasSearched(false); setSelectedCategories([]); }} className="mt-4">
-                    清除搜尋
+                  <Button className="w-full mt-4" size="sm">
+                    套用篩選
                   </Button>
                 </div>
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-gray-600">
+                  共 <span className="font-medium text-gray-900">{filteredResults.length}</span> 項結果
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="lg:hidden flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    篩選
+                  </button>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="h-9 px-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none cursor-pointer"
+                  >
+                    {sortOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="lg:hidden mb-4"
+                >
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">商品分類</h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {categories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => toggleCategory(cat.id)}
+                          className={cn(
+                            'px-3 py-1.5 rounded-full text-sm transition-colors',
+                            selectedCategories.includes(cat.id)
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          )}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">價格範圍</h4>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        placeholder="最低"
+                        value={priceMin}
+                        onChange={(e) => setPriceMin(e.target.value)}
+                        className="w-full h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      />
+                      <span className="text-gray-400 text-sm shrink-0">–</span>
+                      <input
+                        type="number"
+                        placeholder="最高"
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        className="w-full h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      />
+                    </div>
+                    <Button className="w-full mt-4" size="sm">
+                      套用篩選
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+
+              {filteredResults.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Search className="w-16 h-16 text-gray-300 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">找不到相關商品</h3>
+                  <p className="text-sm text-gray-500 mb-6">試試其他關鍵字或篩選條件</p>
+                  <Button variant="outline" onClick={clearAll}>清除搜尋</Button>
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                >
+                  {filteredResults.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </motion.div>
               )}
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </ClientLayout>
   );
 }

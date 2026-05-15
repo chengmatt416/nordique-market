@@ -1,54 +1,46 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Store } from 'lucide-react';
 
 interface CartItem {
-  id: string;
+  id: number;
   name: string;
-  variantName: string;
+  variant: string;
   price: number;
+  image: number;
   quantity: number;
-  image: string;
-  merchantId: string;
-  merchantName: string;
-  selected: boolean;
+  merchant: string;
+  merchantId: number;
 }
 
-const sampleCartItems: CartItem[] = [
-  { id: '1', name: '北歐簡約陶瓷花瓶', variantName: '米白色 / 中型', price: 1280, quantity: 1, image: 'vase-1', merchantId: 'm1', merchantName: '北歐家居館', selected: true },
-  { id: '2', name: '手工羊毛針織毯', variantName: '淺灰色', price: 2480, quantity: 2, image: 'blanket-1', merchantId: 'm1', merchantName: '北歐家居館', selected: true },
-  { id: '3', name: '極簡木質時鐘', variantName: '胡桃木色', price: 980, quantity: 1, image: 'clock-1', merchantId: 'm2', merchantName: '設計師工坊', selected: true },
-  { id: '4', name: '純棉舒眠枕頭套', variantName: '白色 / 標準尺寸', price: 580, quantity: 2, image: 'pillow-1', merchantId: 'm3', merchantName: '質感生活', selected: false },
+const sampleItems: CartItem[] = [
+  { id: 1, name: '極簡實木書桌', variant: '胡桃木色 / 120cm', price: 4200, image: 101, quantity: 1, merchant: 'Nordique 北歐家居', merchantId: 1 },
+  { id: 2, name: '北歐風落地燈', variant: '啞光黑', price: 2600, image: 103, quantity: 2, merchant: 'Nordique 北歐家居', merchantId: 1 },
+  { id: 3, name: '亞麻寬版襯衫', variant: '米白色 / L', price: 1580, image: 105, quantity: 1, merchant: 'Linen House 亞麻之家', merchantId: 2 },
+  { id: 4, name: '藍牙降噪耳機 Pro', variant: '午夜藍', price: 3290, image: 106, quantity: 1, merchant: 'TechVibe 科技潮流', merchantId: 3 },
 ];
 
-function groupItemsByMerchant(items: CartItem[]) {
-  const groups: Record<string, { merchantId: string; merchantName: string; items: CartItem[] }> = {};
-  items.forEach((item) => {
-    if (!groups[item.merchantId]) {
-      groups[item.merchantId] = { merchantId: item.merchantId, merchantName: item.merchantName, items: [] };
+function groupByMerchant(items: CartItem[]) {
+  const map = new Map<number, { merchant: string; merchantId: number; items: CartItem[] }>();
+  for (const item of items) {
+    if (!map.has(item.merchantId)) {
+      map.set(item.merchantId, { merchant: item.merchant, merchantId: item.merchantId, items: [] });
     }
-    groups[item.merchantId].items.push(item);
-  });
-  return Object.values(groups);
+    map.get(item.merchantId)!.items.push(item);
+  }
+  return Array.from(map.values());
 }
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>(sampleCartItems);
-  const [coupon, setCoupon] = useState('');
+  const [items, setItems] = useState<CartItem[]>(sampleItems);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set(sampleItems.map((i) => i.id)));
+  const [couponCode, setCouponCode] = useState('');
 
-  const groupedItems = groupItemsByMerchant(items);
-  const selectedItems = items.filter((i) => i.selected);
-  const subtotal = selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const shippingFee = selectedItems.length > 0 ? 60 : 0;
-  const total = subtotal + shippingFee;
-
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = (id: number, delta: number) => {
     setItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
@@ -56,130 +48,185 @@ export default function CartPage() {
     );
   };
 
-  const toggleSelect = (id: string) => {
-    setItems((prev) => prev.map((item) => item.id === id ? { ...item, selected: !item.selected } : item));
-  };
-
-  const removeItem = (id: string) => {
+  const removeItem = (id: number) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
-  const allSelected = selectedItems.length === items.filter((i) => i.selected).length && items.every((i) => i.selected);
+  const toggleItem = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(items.map((i) => i.id)));
+    }
+  };
+
+  const selectedItems = items.filter((i) => selectedIds.has(i.id));
+  const subtotal = selectedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const shipping = selectedItems.length > 0 ? 60 : 0;
+  const total = subtotal + shipping;
+
+  const merchantGroups = groupByMerchant(items);
+
+  if (items.length === 0) {
+    return (
+      <ClientLayout>
+        <h1 className="text-xl font-bold text-gray-900 mb-6">購物車</h1>
+        <div className="flex flex-col items-center justify-center py-20">
+          <ShoppingBag className="w-20 h-20 text-gray-300 mb-6" />
+          <h2 className="text-lg font-medium text-gray-900 mb-2">您的購物車是空的</h2>
+          <p className="text-sm text-gray-500 mb-8">快去挑選喜歡的商品吧！</p>
+          <Link href="/search">
+            <Button size="lg">開始購物</Button>
+          </Link>
+        </div>
+      </ClientLayout>
+    );
+  }
 
   return (
     <ClientLayout>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">購物車</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">購物車</h1>
 
-        {items.length === 0 ? (
-          <Card padding="lg" className="text-center py-16">
-            <ShoppingBag className="w-16 h-16 mx-auto text-[var(--text-muted)] mb-4" />
-            <p className="text-lg text-[var(--text-secondary)] mb-4">您的購物車是空的</p>
-            <Link href="/search">
-              <Button>開始選購</Button>
-            </Link>
-          </Card>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 min-w-0">
+          <div className="bg-white border border-gray-200 rounded-xl">
+            <div className="flex items-center px-4 py-3 border-b border-gray-200">
+              <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={allSelected}
-                  onChange={() => setItems((prev) => prev.map((i) => ({ ...i, selected: !allSelected })))}
-                  className="w-5 h-5 rounded border-[var(--border)] accent-[var(--primary)]"
+                  checked={selectedIds.size === items.length && items.length > 0}
+                  onChange={toggleAll}
+                  className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <span className="text-sm">全選</span>
+                <span className="text-sm font-medium text-gray-900">全選</span>
               </label>
             </div>
 
-            {groupedItems.map((group) => (
-              <Card key={group.merchantId} padding="none">
-                <div className="p-4 border-b border-[var(--border)] flex items-center gap-2">
-                  <Store className="w-4 h-4 text-[var(--text-muted)]" />
-                  <span className="font-medium">{group.merchantName}</span>
+            {merchantGroups.map((group) => (
+              <div key={group.merchantId} className="border-b border-gray-200 last:border-b-0">
+                <div className="flex items-center gap-2 px-4 py-3 bg-gray-50">
+                  <Store className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">{group.merchant}</span>
                 </div>
-                <div className="divide-y divide-[var(--border)]">
-                  {group.items.map((item) => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -100 }}
-                      className="p-4 flex gap-4"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={item.selected}
-                        onChange={() => toggleSelect(item.id)}
-                        className="w-5 h-5 rounded border-[var(--border)] accent-[var(--primary)] flex-shrink-0 mt-4"
+
+                {group.items.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3 px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => toggleItem(item.id)}
+                      className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 shrink-0"
+                    />
+                    <div className="w-[60px] h-[60px] rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                      <img
+                        src={`https://picsum.photos/seed/${item.image}/120/120`}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
                       />
-                      <div className="w-20 h-20 bg-[var(--secondary)] rounded-lg overflow-hidden flex-shrink-0">
-                        <img src={`https://picsum.photos/seed/${item.image}/200/200`} alt={item.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{item.name}</h3>
-                        <p className="text-sm text-[var(--text-secondary)]">{item.variantName}</p>
-                        <p className="font-bold text-[var(--primary)] mt-1">{formatPrice(item.price)}</p>
-                      </div>
-                      <div className="flex flex-col items-end justify-between">
-                        <button onClick={() => removeItem(item.id)} className="p-1 text-[var(--text-muted)] hover:text-[var(--error)]">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)]">
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)]">
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </Card>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">{item.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{formatPrice(item.price)}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        disabled={item.quantity <= 1}
+                        className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="w-8 text-center text-sm text-gray-900">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             ))}
+          </div>
+        </div>
 
-            <Card padding="md">
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                  placeholder="輸入優惠碼"
-                  className="flex-1 h-10 px-3 border border-[var(--border)] rounded-lg focus:outline-none focus:border-[var(--accent)]"
-                />
-                <Button variant="outline" size="sm">套用</Button>
-              </div>
-            </Card>
-
-            <Card padding="md">
+        <div className="lg:w-80 shrink-0">
+          <div className="sticky top-[88px]">
+            <Card padding="lg">
               <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">商品小計</span>
-                  <span>{formatPrice(subtotal)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">小計</span>
+                  <span className="text-sm font-medium text-gray-900">{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">運費</span>
-                  <span>{formatPrice(shippingFee)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">運費</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {shipping > 0 ? formatPrice(shipping) : '–'}
+                  </span>
                 </div>
-                <div className="flex justify-between font-bold text-lg pt-3 border-t border-[var(--border)]">
-                  <span>總計</span>
-                  <span className="text-[var(--primary)]">{formatPrice(total)}</span>
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-semibold text-gray-900">總計</span>
+                    <span className="text-base font-bold text-gray-900">{formatPrice(total)}</span>
+                  </div>
                 </div>
               </div>
-              <Link href="/client/checkout" className="block mt-4">
-                <Button className="w-full" size="lg" disabled={selectedItems.length === 0}>
-                  結帳
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+
+              <Link
+                href={selectedItems.length > 0 ? '/client/checkout' : '#'}
+                className={cn(
+                  'flex items-center justify-center gap-2 w-full mt-5 h-12 rounded-lg font-medium text-white transition-colors',
+                  selectedItems.length > 0
+                    ? 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-indigo-600/50 cursor-not-allowed pointer-events-none'
+                )}
+              >
+                結帳
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </Card>
+
+            <Card className="mt-4">
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-gray-700">優惠券</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="輸入折扣碼"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                    className="flex-1 h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  />
+                  <Button variant="outline" size="md" disabled={!couponCode.trim()}>
+                    套用
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
-        )}
+        </div>
       </div>
     </ClientLayout>
   );

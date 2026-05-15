@@ -238,15 +238,15 @@ export default function AdminOrdersPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <ShoppingCart className="w-8 h-8 text-[var(--primary)]" />
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">訂單管理</h1>
+          <ShoppingCart className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900">訂單管理</h1>
         </div>
 
         {disputeOrders.length > 0 && (
-          <Card padding="md" className="border-[var(--error)]/50 bg-[var(--error)]/5">
+          <Card padding="md" className="border-red-500/50 bg-red-50">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 text-[var(--error)]" />
-              <span className="font-medium text-[var(--text-primary)]">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <span className="font-medium text-gray-900">
                 目前有 {disputeOrders.length} 筆訂單存在糾紛，需要處理
               </span>
             </div>
@@ -257,18 +257,18 @@ export default function AdminOrdersPage() {
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type="text"
                   placeholder="搜尋訂單編號或客戶名稱..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-10 pl-10 pr-4 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--primary)]"
+                  className="w-full h-10 pl-10 pr-4 rounded border border-gray-200 bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:border-indigo-600"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2 border-b border-[var(--border)]">
+            <div className="flex gap-2 border-b border-gray-200">
               {statusTabs.map((tab) => (
                 <button
                   key={tab.key}
@@ -276,8 +276,8 @@ export default function AdminOrdersPage() {
                   className={cn(
                     'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
                     activeTab === tab.key
-                      ? 'border-[var(--primary)] text-[var(--primary)]'
-                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'border-indigo-600 text-indigo-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
                   )}
                 >
                   {tab.label} ({getCountByStatus(tab.statuses)})
@@ -288,7 +288,7 @@ export default function AdminOrdersPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-sm text-[var(--text-secondary)] border-b border-[var(--border)]">
+                  <tr className="text-left text-sm text-gray-600 border-b border-gray-200">
                     <th className="pb-3 font-medium">訂單編號</th>
                     <th className="pb-3 font-medium">客戶名稱</th>
                     <th className="pb-3 font-medium">商家</th>
@@ -304,36 +304,36 @@ export default function AdminOrdersPage() {
                     <tr
                       key={order.id}
                       className={cn(
-                        'border-b border-[var(--border)] last:border-0 transition-colors',
-                        order.hasDispute ? 'bg-[var(--error)]/5 hover:bg-[var(--error)]/10' : 'hover:bg-[var(--secondary)]/50'
+                        'border-b border-gray-200 last:border-0 transition-colors',
+                        order.hasDispute ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-50/50'
                       )}
                     >
-                      <td className="py-3 font-medium text-[var(--text-primary)]">
+                      <td className="py-3 font-medium text-gray-900">
                         {order.id}
                       </td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {order.customerName}
                       </td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {order.merchantName}
                       </td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {order.items.reduce((sum, item) => sum + item.quantity, 0)} 件
                       </td>
-                      <td className="py-3 font-medium text-[var(--primary)]">
+                      <td className="py-3 font-medium text-indigo-600">
                         {formatPrice(order.total)}
                       </td>
                       <td className="py-3">{getStatusBadge(order.status, order.hasDispute)}</td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {formatDate(order.date)}
                       </td>
                       <td className="py-3">
                         <button
                           onClick={() => handleViewDetail(order)}
-                          className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--secondary)] transition-colors"
+                          className="p-2 rounded hover:bg-gray-50 transition-colors"
                           title="查看詳情"
                         >
-                          <Eye className="w-4 h-4 text-[var(--text-secondary)]" />
+                          <Eye className="w-4 h-4 text-gray-600" />
                         </button>
                       </td>
                     </tr>
@@ -342,7 +342,7 @@ export default function AdminOrdersPage() {
               </table>
 
               {filteredOrders.length === 0 && (
-                <div className="py-12 text-center text-[var(--text-secondary)]">
+                <div className="py-12 text-center text-gray-600">
                   沒有找到符合條件的訂單
                 </div>
               )}
@@ -361,67 +361,67 @@ export default function AdminOrdersPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                <h3 className="text-lg font-semibold text-gray-900">
                   {selectedOrder.id}
                 </h3>
-                <p className="text-sm text-[var(--text-secondary)]">
+                <p className="text-sm text-gray-600">
                   {formatDate(selectedOrder.date)}
                 </p>
               </div>
               {getStatusBadge(selectedOrder.status, selectedOrder.hasDispute)}
             </div>
 
-            <div className="border-t border-[var(--border)] pt-4">
-              <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-2">客戶資訊</h4>
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">客戶資訊</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-[var(--text-secondary)]">姓名：</span>
-                  <span className="text-[var(--text-primary)]">{selectedOrder.customerName}</span>
+                  <span className="text-gray-600">姓名：</span>
+                  <span className="text-gray-900">{selectedOrder.customerName}</span>
                 </div>
                 <div>
-                  <span className="text-[var(--text-secondary)]">電話：</span>
-                  <span className="text-[var(--text-primary)]">{selectedOrder.phone}</span>
+                  <span className="text-gray-600">電話：</span>
+                  <span className="text-gray-900">{selectedOrder.phone}</span>
                 </div>
               </div>
               <div className="mt-2 text-sm">
-                <span className="text-[var(--text-secondary)]">配送地址：</span>
-                <span className="text-[var(--text-primary)]">{selectedOrder.shippingAddress}</span>
+                <span className="text-gray-600">配送地址：</span>
+                <span className="text-gray-900">{selectedOrder.shippingAddress}</span>
               </div>
             </div>
 
-            <div className="border-t border-[var(--border)] pt-4">
-              <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-2">商家資訊</h4>
-              <p className="text-sm text-[var(--text-primary)]">{selectedOrder.merchantName}</p>
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">商家資訊</h4>
+              <p className="text-sm text-gray-900">{selectedOrder.merchantName}</p>
             </div>
 
-            <div className="border-t border-[var(--border)] pt-4">
-              <h4 className="text-sm font-medium text-[var(--text-secondary)] mb-2">商品明細</h4>
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">商品明細</h4>
               <div className="space-y-2">
                 {selectedOrder.items.map((item, index) => (
                   <div key={index} className="flex items-center justify-between text-sm">
                     <div>
-                      <span className="text-[var(--text-primary)]">{item.name}</span>
-                      <span className="text-[var(--text-secondary)]"> x {item.quantity}</span>
+                      <span className="text-gray-900">{item.name}</span>
+                      <span className="text-gray-600"> x {item.quantity}</span>
                     </div>
-                    <span className="text-[var(--text-primary)]">{formatPrice(item.price)}</span>
+                    <span className="text-gray-900">{formatPrice(item.price)}</span>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border)]">
-                <span className="font-medium text-[var(--text-primary)]">總計</span>
-                <span className="text-lg font-semibold text-[var(--primary)]">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+                <span className="font-medium text-gray-900">總計</span>
+                <span className="text-lg font-semibold text-indigo-600">
                   {formatPrice(selectedOrder.total)}
                 </span>
               </div>
             </div>
 
             {selectedOrder.hasDispute && (
-              <div className="border-t border-[var(--border)] pt-4">
-                <div className="flex items-start gap-2 p-3 rounded-[var(--radius-sm)] bg-[var(--error)]/10">
-                  <AlertTriangle className="w-4 h-4 text-[var(--error)] mt-0.5" />
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-start gap-2 p-3 rounded bg-red-100">
+                  <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5" />
                   <div>
-                    <p className="font-medium text-[var(--error)]">訂單糾紛</p>
-                    <p className="text-sm text-[var(--text-secondary)] mt-1">
+                    <p className="font-medium text-red-500">訂單糾紛</p>
+                    <p className="text-sm text-gray-600 mt-1">
                       {selectedOrder.disputeReason}
                     </p>
                   </div>

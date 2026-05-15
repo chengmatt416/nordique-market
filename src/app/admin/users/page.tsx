@@ -96,15 +96,15 @@ export default function AdminUsersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">用戶管理</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">管理所有註冊用戶與商家</p>
+            <h1 className="text-2xl font-bold text-gray-900">用戶管理</h1>
+            <p className="text-sm text-gray-600 mt-1">管理所有註冊用戶與商家</p>
           </div>
         </div>
 
         <Card padding="none">
-          <div className="p-4 border-b border-[var(--border)]">
+          <div className="p-4 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-1 p-1 bg-[var(--secondary)] rounded-lg">
+              <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-lg">
                 {(['全部', '顧客', '商家'] as TabType[]).map((tab) => (
                   <button
                     key={tab}
@@ -112,8 +112,8 @@ export default function AdminUsersPage() {
                     className={cn(
                       'px-4 py-2 text-sm font-medium rounded-md transition-all duration-150',
                       activeTab === tab
-                        ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-sm'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
                     {tab}
@@ -137,35 +137,35 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     用戶
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     角色
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     狀態
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     加入日期
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
                     操作
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border)]">
+              <tbody className="divide-y divide-gray-200">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-[var(--secondary)]/50 transition-colors">
+                  <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className={cn('w-10 h-10 rounded-full flex items-center justify-center text-white font-medium', user.avatarColor)}>
                           {getInitials(user.name)}
                         </div>
                         <div>
-                          <p className="font-medium text-[var(--text-primary)]">{user.name}</p>
-                          <p className="text-sm text-[var(--text-secondary)]">{user.email}</p>
+                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="text-sm text-gray-600">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -179,16 +179,16 @@ export default function AdminUsersPage() {
                         {user.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-4 text-sm text-[var(--text-secondary)]">
+                    <td className="px-4 py-4 text-sm text-gray-600">
                       {formatDate(user.joinDate)}
                     </td>
                     <td className="px-4 py-4 text-right">
                       <div className="relative inline-block">
                         <button
                           onClick={() => setOpenDropdownId(openDropdownId === user.id ? null : user.id)}
-                          className="p-2 rounded-lg hover:bg-[var(--secondary)] transition-colors"
+                          className="p-2 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          <MoreVertical className="w-4 h-4 text-[var(--text-secondary)]" />
+                          <MoreVertical className="w-4 h-4 text-gray-600" />
                         </button>
                         <AnimatePresence>
                           {openDropdownId === user.id && (
@@ -197,18 +197,18 @@ export default function AdminUsersPage() {
                               animate={{ opacity: 1, scale: 1, y: 0 }}
                               exit={{ opacity: 0, scale: 0.95, y: -5 }}
                               transition={{ duration: 0.1 }}
-                              className="absolute right-0 mt-1 w-40 bg-[var(--surface)] rounded-lg shadow-lg border border-[var(--border)] py-1 z-10"
+                              className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
                             >
                               <button
                                 onClick={() => handleViewDetails(user)}
-                                className="w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--secondary)] flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center gap-2"
                               >
                                 <Eye className="w-4 h-4" />
                                 查看詳情
                               </button>
                               <button
                                 onClick={() => handleToggleStatus(user.id)}
-                                className="w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--secondary)] flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 flex items-center gap-2"
                               >
                                 {user.status === '正常' ? (
                                   <>
@@ -235,13 +235,13 @@ export default function AdminUsersPage() {
 
           {filteredUsers.length === 0 && (
             <div className="p-8 text-center">
-              <Users className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-3" />
-              <p className="text-[var(--text-secondary)]">找不到符合條件的用戶</p>
+              <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">找不到符合條件的用戶</p>
             </div>
           )}
 
-          <div className="p-4 border-t border-[var(--border)]">
-            <p className="text-sm text-[var(--text-secondary)]">
+          <div className="p-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
               顯示 {filteredUsers.length} 筆結果，共 {users.length} 位用戶
             </p>
           </div>
@@ -260,20 +260,20 @@ export default function AdminUsersPage() {
                   {getInitials(selectedUser.name)}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[var(--text-primary)]">{selectedUser.name}</h3>
-                  <p className="text-sm text-[var(--text-secondary)]">{selectedUser.email}</p>
+                  <h3 className="text-lg font-semibold text-gray-900">{selectedUser.name}</h3>
+                  <p className="text-sm text-gray-600">{selectedUser.email}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-[var(--secondary)] rounded-lg">
-                  <p className="text-sm text-[var(--text-secondary)]">角色</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">角色</p>
                   <Badge variant={getRoleBadgeVariant(selectedUser.role)} className="mt-1">
                     {selectedUser.role}
                   </Badge>
                 </div>
-                <div className="p-4 bg-[var(--secondary)] rounded-lg">
-                  <p className="text-sm text-[var(--text-secondary)]">狀態</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">狀態</p>
                   <Badge variant={getStatusBadgeVariant(selectedUser.status)} className="mt-1">
                     {selectedUser.status}
                   </Badge>
@@ -281,26 +281,26 @@ export default function AdminUsersPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-[var(--secondary)] rounded-lg">
-                  <p className="text-sm text-[var(--text-secondary)]">訂單數量</p>
-                  <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{selectedUser.orders}</p>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">訂單數量</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{selectedUser.orders}</p>
                 </div>
-                <div className="p-4 bg-[var(--secondary)] rounded-lg">
-                  <p className="text-sm text-[var(--text-secondary)]">消費金額</p>
-                  <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">消費金額</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
                     {selectedUser.role === '顧客' ? formatCurrency(selectedUser.totalSpent) : '-'}
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-[var(--secondary)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)]">加入日期</p>
-                <p className="text-base font-medium text-[var(--text-primary)] mt-1">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600">加入日期</p>
+                <p className="text-base font-medium text-gray-900 mt-1">
                   {formatDate(selectedUser.joinDate)}
                 </p>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-[var(--border)]">
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <Button
                   variant="outline"
                   className="flex-1"

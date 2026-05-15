@@ -232,26 +232,26 @@ export default function AdminProductsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Package className="w-8 h-8 text-[var(--primary)]" />
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">商品管理</h1>
+          <Package className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
         </div>
 
         <Card padding="lg">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type="text"
                   placeholder="搜尋商品、名稱或商家..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-10 pl-10 pr-4 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--primary)]"
+                  className="w-full h-10 pl-10 pr-4 rounded border border-gray-200 bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:border-indigo-600"
                 />
               </div>
             </div>
 
-            <div className="flex gap-2 border-b border-[var(--border)]">
+            <div className="flex gap-2 border-b border-gray-200">
               {tabs.map((tab) => (
                 <button
                   key={tab.key}
@@ -259,8 +259,8 @@ export default function AdminProductsPage() {
                   className={cn(
                     'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
                     activeTab === tab.key
-                      ? 'border-[var(--primary)] text-[var(--primary)]'
-                      : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'border-indigo-600 text-indigo-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
                   )}
                 >
                   {tab.label} ({getCountByStatus(tab.statuses)})
@@ -271,7 +271,7 @@ export default function AdminProductsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-sm text-[var(--text-secondary)] border-b border-[var(--border)]">
+                  <tr className="text-left text-sm text-gray-600 border-b border-gray-200">
                     <th className="pb-3 font-medium">商品圖片</th>
                     <th className="pb-3 font-medium">商品名稱</th>
                     <th className="pb-3 font-medium">商家</th>
@@ -285,34 +285,34 @@ export default function AdminProductsPage() {
                   {filteredProducts.map((product) => (
                     <tr
                       key={product.id}
-                      className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--secondary)]/50 transition-colors"
+                      className="border-b border-gray-200 last:border-0 hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="py-3">
                         <img
                           src={`https://picsum.photos/seed/${product.image}/80/80`}
                           alt={product.name}
-                          className="w-12 h-12 rounded-[var(--radius-sm)] object-cover"
+                          className="w-12 h-12 rounded object-cover"
                         />
                       </td>
                       <td className="py-3">
-                        <div className="font-medium text-[var(--text-primary)]">
+                        <div className="font-medium text-gray-900">
                           {product.name}
                         </div>
-                        <div className="text-xs text-[var(--text-secondary)]">
+                        <div className="text-xs text-gray-600">
                           {product.id}
                         </div>
                       </td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {product.merchantName}
                       </td>
-                      <td className="py-3 text-[var(--text-secondary)]">
+                      <td className="py-3 text-gray-600">
                         {product.category}
                       </td>
                       <td className="py-3">
-                        <div className="font-medium text-[var(--primary)]">
+                        <div className="font-medium text-indigo-600">
                           {formatPrice(product.price)}
                         </div>
-                        <div className="text-xs text-[var(--text-secondary)] line-through">
+                        <div className="text-xs text-gray-600 line-through">
                           {formatPrice(product.originalPrice)}
                         </div>
                       </td>
@@ -321,38 +321,38 @@ export default function AdminProductsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handlePreview(product)}
-                            className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--secondary)] transition-colors"
+                            className="p-2 rounded hover:bg-gray-50 transition-colors"
                             title="預覽"
                           >
-                            <Eye className="w-4 h-4 text-[var(--text-secondary)]" />
+                            <Eye className="w-4 h-4 text-gray-600" />
                           </button>
                           {product.status === 'pending' && (
                             <>
                               <button
                                 onClick={() => handleApprove(product.id)}
-                                className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--success)]/10 transition-colors"
+                                className="p-2 rounded hover:bg-green-100 transition-colors"
                                 title="核准"
                               >
-                                <Check className="w-4 h-4 text-[var(--success)]" />
+                                <Check className="w-4 h-4 text-green-500" />
                               </button>
                               <button
                                 onClick={() => {
                                   setSelectedProduct(product);
                                   setShowRejectModal(true);
                                 }}
-                                className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--error)]/10 transition-colors"
+                                className="p-2 rounded hover:bg-red-100 transition-colors"
                                 title="拒絕"
                               >
-                                <X className="w-4 h-4 text-[var(--error)]" />
+                                <X className="w-4 h-4 text-red-500" />
                               </button>
                             </>
                           )}
                           <button
                             onClick={() => handleDelete(product.id)}
-                            className="p-2 rounded-[var(--radius-sm)] hover:bg-[var(--error)]/10 transition-colors"
+                            className="p-2 rounded hover:bg-red-100 transition-colors"
                             title="刪除"
                           >
-                            <X className="w-4 h-4 text-[var(--error)]" />
+                            <X className="w-4 h-4 text-red-500" />
                           </button>
                         </div>
                       </td>
@@ -362,7 +362,7 @@ export default function AdminProductsPage() {
               </table>
 
               {filteredProducts.length === 0 && (
-                <div className="py-12 text-center text-[var(--text-secondary)]">
+                <div className="py-12 text-center text-gray-600">
                   沒有找到符合條件的商品
                 </div>
               )}
@@ -383,61 +383,61 @@ export default function AdminProductsPage() {
               <img
                 src={`https://picsum.photos/seed/${selectedProduct.image}/400/400`}
                 alt={selectedProduct.name}
-                className="w-40 h-40 rounded-[var(--radius-md)] object-cover"
+                className="w-40 h-40 rounded object-cover"
               />
               <div className="flex-1 space-y-2">
-                <h3 className="text-xl font-semibold text-[var(--text-primary)]">
+                <h3 className="text-xl font-semibold text-gray-900">
                   {selectedProduct.name}
                 </h3>
-                <p className="text-sm text-[var(--text-secondary)]">
+                <p className="text-sm text-gray-600">
                   {selectedProduct.id}
                 </p>
                 <div className="flex items-center gap-2">
                   {getStatusBadge(selectedProduct.status)}
                 </div>
-                <div className="text-sm text-[var(--text-secondary)]">
+                <div className="text-sm text-gray-600">
                   商家：{selectedProduct.merchantName}
                 </div>
-                <div className="text-sm text-[var(--text-secondary)]">
+                <div className="text-sm text-gray-600">
                   類別：{selectedProduct.category}
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-[var(--border)] pt-4">
+            <div className="border-t border-gray-200 pt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-[var(--text-secondary)]">售價</p>
-                  <p className="text-lg font-semibold text-[var(--primary)]">
+                  <p className="text-sm text-gray-600">售價</p>
+                  <p className="text-lg font-semibold text-indigo-600">
                     {formatPrice(selectedProduct.price)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--text-secondary)]">原價</p>
-                  <p className="text-lg line-through text-[var(--text-secondary)]">
+                  <p className="text-sm text-gray-600">原價</p>
+                  <p className="text-lg line-through text-gray-600">
                     {formatPrice(selectedProduct.originalPrice)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--text-secondary)]">庫存</p>
+                  <p className="text-sm text-gray-600">庫存</p>
                   <p className="text-lg font-semibold">{selectedProduct.stock}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--text-secondary)]">上架日期</p>
+                  <p className="text-sm text-gray-600">上架日期</p>
                   <p className="text-lg">{selectedProduct.createdAt}</p>
                 </div>
               </div>
             </div>
 
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">商品描述</p>
-              <p className="text-[var(--text-primary)]">
+              <p className="text-sm text-gray-600 mb-1">商品描述</p>
+              <p className="text-gray-900">
                 {selectedProduct.description}
               </p>
             </div>
 
             {selectedProduct.status === 'pending' && (
-              <div className="flex gap-3 pt-4 border-t border-[var(--border)]">
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <Button
                   variant="primary"
                   onClick={() => handleApprove(selectedProduct.id)}
@@ -471,7 +471,7 @@ export default function AdminProductsPage() {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-[var(--text-secondary)]">
+          <p className="text-gray-600">
             請輸入拒絕原因，將通知商家進行修改。
           </p>
           <textarea
@@ -479,7 +479,7 @@ export default function AdminProductsPage() {
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="請輸入違規原因..."
             rows={4}
-            className="w-full px-3 py-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--primary)] resize-none"
+            className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:border-indigo-600 resize-none"
           />
           <div className="flex gap-3 justify-end">
             <Button

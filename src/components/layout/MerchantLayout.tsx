@@ -11,7 +11,7 @@ interface MerchantLayoutProps {
 
 export function MerchantLayout({ children, className }: MerchantLayoutProps) {
   return (
-    <div className="min-h-screen bg-[var(--secondary)]">
+    <div className="min-h-screen bg-gray-100">
       <MerchantSidebar />
 
       <main

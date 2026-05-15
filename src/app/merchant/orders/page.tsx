@@ -232,19 +232,19 @@ export default function MerchantOrdersPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">訂單管理</h1>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
+            <h1 className="text-2xl font-bold text-gray-900">訂單管理</h1>
+            <p className="text-sm text-gray-600 mt-1">
               管理您的所有訂單
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
             <Package className="w-5 h-5" />
             <span>共 {sampleOrders.length} 筆訂單</span>
           </div>
         </div>
 
         <Card padding="none">
-          <div className="border-b border-[var(--border)]">
+          <div className="border-b border-gray-200">
             <div className="flex items-center justify-between px-4 py-3">
               <div className="flex items-center gap-2">
                 {tabs.map((tab) => (
@@ -252,10 +252,10 @@ export default function MerchantOrdersPage() {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
                     className={cn(
-                      'px-4 py-2 text-sm font-medium rounded-[var(--radius-sm)] transition-colors',
+                      'px-4 py-2 text-sm font-medium rounded-md transition-colors',
                       activeTab === tab.key
-                        ? 'bg-[var(--accent)] text-[var(--primary)]'
-                        : 'text-[var(--text-secondary)] hover:bg-[var(--secondary)]'
+                        ? 'bg-pink-400 text-white'
+                        : 'text-gray-600 hover:bg-gray-50'
                     )}
                   >
                     {tab.label}
@@ -279,13 +279,13 @@ export default function MerchantOrdersPage() {
                 ))}
               </div>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="搜尋訂單..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 h-10 pl-10 pr-4 rounded-[var(--radius-sm)] border border-[var(--border)] bg-white text-sm focus:outline-none focus:border-[var(--accent)]"
+                  className="w-64 h-10 pl-10 pr-4 rounded-md border border-gray-200 bg-white text-sm focus:outline-none focus:border-pink-400"
                 />
               </div>
             </div>
@@ -294,26 +294,26 @@ export default function MerchantOrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                <tr className="border-b border-gray-200">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     訂單編號
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     客戶名稱
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     商品數量
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     訂單總額
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     狀態
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     日期
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
                     操作
                   </th>
                 </tr>
@@ -324,18 +324,18 @@ export default function MerchantOrdersPage() {
                     key={order.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="border-b border-[var(--border)] hover:bg-[var(--secondary)]/50 transition-colors"
+                    className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors"
                   >
-                    <td className="px-4 py-4 text-sm font-medium text-[var(--text-primary)]">
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">
                       {order.id}
                     </td>
-                    <td className="px-4 py-4 text-sm text-[var(--text-primary)]">
+                    <td className="px-4 py-4 text-sm text-gray-900">
                       {order.customerName}
                     </td>
-                    <td className="px-4 py-4 text-sm text-[var(--text-secondary)]">
+                    <td className="px-4 py-4 text-sm text-gray-600">
                       {order.items.length} 件
                     </td>
-                    <td className="px-4 py-4 text-sm font-medium text-[var(--text-primary)]">
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">
                       {formatPrice(order.total)}
                     </td>
                     <td className="px-4 py-4">
@@ -343,7 +343,7 @@ export default function MerchantOrdersPage() {
                         {statusLabels[order.status]}
                       </Badge>
                     </td>
-                    <td className="px-4 py-4 text-sm text-[var(--text-secondary)]">
+                    <td className="px-4 py-4 text-sm text-gray-600">
                       {formatDate(order.date)}
                     </td>
                     <td className="px-4 py-4">
@@ -372,7 +372,7 @@ export default function MerchantOrdersPage() {
           </div>
 
           {filteredOrders.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-[var(--text-secondary)]">
+            <div className="flex flex-col items-center justify-center py-12 text-gray-600">
               <Package className="w-12 h-12 mb-4 opacity-50" />
               <p>找不到符合條件的訂單</p>
             </div>
@@ -392,33 +392,33 @@ export default function MerchantOrdersPage() {
               <Badge variant={statusBadgeVariants[selectedOrder.status]}>
                 {statusLabels[selectedOrder.status]}
               </Badge>
-              <span className="text-sm text-[var(--text-secondary)]">
+              <span className="text-sm text-gray-600">
                 {selectedOrder.id}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-start gap-3">
-                <User className="w-5 h-5 text-[var(--text-muted)] mt-0.5" />
+                <User className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">
+                  <p className="text-sm font-medium text-gray-900">
                     {selectedOrder.customerName}
                   </p>
-                  <p className="text-sm text-[var(--text-secondary)]">
+                  <p className="text-sm text-gray-600">
                     {selectedOrder.customerEmail}
                   </p>
-                  <p className="text-sm text-[var(--text-secondary)]">
+                  <p className="text-sm text-gray-600">
                     {selectedOrder.customerPhone}
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <CreditCard className="w-5 h-5 text-[var(--text-muted)] mt-0.5" />
+                <CreditCard className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">
+                  <p className="text-sm font-medium text-gray-900">
                     付款方式
                   </p>
-                  <p className="text-sm text-[var(--text-secondary)]">
+                  <p className="text-sm text-gray-600">
                     {selectedOrder.paymentMethod}
                   </p>
                 </div>
@@ -426,41 +426,41 @@ export default function MerchantOrdersPage() {
             </div>
 
             <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-[var(--text-muted)] mt-0.5" />
+              <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-[var(--text-primary)]">
+                <p className="text-sm font-medium text-gray-900">
                   配送地址
                 </p>
-                <p className="text-sm text-[var(--text-secondary)]">
+                <p className="text-sm text-gray-600">
                   {selectedOrder.shippingAddress}
                 </p>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-medium text-[var(--text-primary)] mb-3">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">
                 商品列表
               </h4>
               <div className="space-y-3">
                 {selectedOrder.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-3 bg-[var(--secondary)] rounded-[var(--radius-sm)]"
+                    className="flex items-center gap-4 p-3 bg-gray-50 rounded-md"
                   >
                     <img
                       src={getImageUrl(item.image)}
                       alt={item.name}
-                      className="w-16 h-16 object-cover rounded-[var(--radius-sm)]"
+                      className="w-16 h-16 object-cover rounded-md"
                     />
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-[var(--text-primary)]">
+                      <p className="text-sm font-medium text-gray-900">
                         {item.name}
                       </p>
-                      <p className="text-sm text-[var(--text-secondary)]">
+                      <p className="text-sm text-gray-600">
                         {formatPrice(item.price)} × {item.quantity}
                       </p>
                     </div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                    <p className="text-sm font-medium text-gray-900">
                       {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
@@ -468,24 +468,24 @@ export default function MerchantOrdersPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">訂單日期</p>
-                <p className="text-sm font-medium text-[var(--text-primary)]">
+                <p className="text-sm text-gray-600">訂單日期</p>
+                <p className="text-sm font-medium text-gray-900">
                   {formatDate(selectedOrder.date)}
                 </p>
                 {selectedOrder.trackingNumber && (
                   <>
-                    <p className="text-sm text-[var(--text-secondary)] mt-2">追蹤編號</p>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                    <p className="text-sm text-gray-600 mt-2">追蹤編號</p>
+                    <p className="text-sm font-medium text-gray-900">
                       {selectedOrder.trackingNumber}
                     </p>
                   </>
                 )}
               </div>
               <div className="text-right">
-                <p className="text-sm text-[var(--text-secondary)]">訂單總額</p>
-                <p className="text-2xl font-bold text-[var(--primary)]">
+                <p className="text-sm text-gray-600">訂單總額</p>
+                <p className="text-2xl font-bold text-indigo-600">
                   {formatPrice(selectedOrder.total)}
                 </p>
               </div>
@@ -540,7 +540,7 @@ export default function MerchantOrdersPage() {
         size="md"
       >
         <div className="space-y-4">
-          <p className="text-sm text-[var(--text-secondary)]">
+          <p className="text-sm text-gray-600">
             訂單編號：{selectedOrder?.id}
           </p>
           <Input

@@ -263,14 +263,14 @@ export default function MerchantsPage() {
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">商家管理</h1>
-          <p className="text-[var(--text-secondary)] mt-1">管理所有商家入駐申請與資料</p>
+          <h1 className="text-2xl font-bold text-gray-900">商家管理</h1>
+          <p className="text-gray-600 mt-1">管理所有商家入駐申請與資料</p>
         </div>
 
         <Card padding="lg">
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-1 bg-[var(--secondary)] p-1 rounded-lg">
+              <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg">
                 {tabs.map((tab) => (
                   <button
                     key={tab.key}
@@ -278,8 +278,8 @@ export default function MerchantsPage() {
                     className={cn(
                       'px-4 py-2 rounded-md text-sm font-medium transition-all',
                       activeTab === tab.key
-                        ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-sm'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
                     )}
                   >
                     {tab.label}
@@ -287,8 +287,8 @@ export default function MerchantsPage() {
                       className={cn(
                         'ml-1.5 text-xs px-1.5 py-0.5 rounded-full',
                         activeTab === tab.key
-                          ? 'bg-[var(--primary)]/10 text-[var(--primary)]'
-                          : 'bg-[var(--border)]'
+                          ? 'bg-indigo-600/10 text-indigo-600'
+                          : 'bg-gray-200'
                       )}
                     >
                       {tabCounts[tab.key]}
@@ -298,13 +298,13 @@ export default function MerchantsPage() {
               </div>
 
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
                 <input
                   type="text"
                   placeholder="搜尋商店名稱、店主或電子郵件..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-64 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)]"
+                  className="pl-10 pr-4 py-2 w-64 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600"
                 />
               </div>
             </div>
@@ -312,23 +312,23 @@ export default function MerchantsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[var(--border)]">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                       商店
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                       店主
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                       電子郵件
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                       狀態
                     </th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">
                       入駐日期
                     </th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-[var(--text-secondary)]">
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">
                       操作
                     </th>
                   </tr>
@@ -341,26 +341,26 @@ export default function MerchantsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="border-b border-[var(--border)] hover:bg-[var(--secondary)]/50 transition-colors"
+                        className="border-b border-gray-200 hover:bg-gray-50/50 transition-colors"
                       >
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-[var(--secondary)] flex items-center justify-center overflow-hidden">
-                              <Store className="w-5 h-5 text-[var(--text-secondary)]" />
+                            <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
+                              <Store className="w-5 h-5 text-gray-600" />
                             </div>
-                            <span className="font-medium text-[var(--text-primary)]">
+                            <span className="font-medium text-gray-900">
                               {merchant.storeName}
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-sm text-[var(--text-secondary)]">
+                        <td className="py-3 px-4 text-sm text-gray-600">
                           {merchant.ownerName}
                         </td>
-                        <td className="py-3 px-4 text-sm text-[var(--text-secondary)]">
+                        <td className="py-3 px-4 text-sm text-gray-600">
                           {merchant.email}
                         </td>
                         <td className="py-3 px-4">{getStatusBadge(merchant.status)}</td>
-                        <td className="py-3 px-4 text-sm text-[var(--text-secondary)]">
+                        <td className="py-3 px-4 text-sm text-gray-600">
                           {formatDate(merchant.joinDate)}
                         </td>
                         <td className="py-3 px-4">
@@ -369,9 +369,9 @@ export default function MerchantsPage() {
                               onClick={() =>
                                 setOpenMenu(openMenu === merchant.id ? null : merchant.id)
                               }
-                              className="p-1.5 rounded-md hover:bg-[var(--secondary)] transition-colors"
+                              className="p-1.5 rounded-md hover:bg-gray-50 transition-colors"
                             >
-                              <MoreVertical className="w-4 h-4 text-[var(--text-secondary)]" />
+                              <MoreVertical className="w-4 h-4 text-gray-600" />
                             </button>
 
                             <AnimatePresence>
@@ -380,11 +380,11 @@ export default function MerchantsPage() {
                                   initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                  className="absolute right-0 top-full mt-1 w-36 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-lg overflow-hidden z-10"
+                                  className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden z-10"
                                 >
                                   <button
                                     onClick={() => openDetailModal(merchant)}
-                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--secondary)] transition-colors"
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
                                   >
                                     <Eye className="w-4 h-4" />
                                     查看詳情
@@ -393,14 +393,14 @@ export default function MerchantsPage() {
                                     <>
                                       <button
                                         onClick={() => openApproveModal(merchant)}
-                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--success)] hover:bg-[var(--secondary)] transition-colors"
+                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-green-500 hover:bg-gray-50 transition-colors"
                                       >
                                         <Check className="w-4 h-4" />
                                         核准
                                       </button>
                                       <button
                                         onClick={() => openRejectModal(merchant)}
-                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--secondary)] transition-colors"
+                                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-500 hover:bg-gray-50 transition-colors"
                                       >
                                         <X className="w-4 h-4" />
                                         拒絕
@@ -419,7 +419,7 @@ export default function MerchantsPage() {
               </table>
 
               {filteredMerchants.length === 0 && (
-                <div className="py-12 text-center text-[var(--text-secondary)]">
+                <div className="py-12 text-center text-gray-600">
                   <Store className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>找不到符合條件的商家</p>
                 </div>
@@ -433,28 +433,28 @@ export default function MerchantsPage() {
         {selectedMerchant && (
           <div className="space-y-6">
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-xl bg-[var(--secondary)] flex items-center justify-center flex-shrink-0">
-                <Store className="w-8 h-8 text-[var(--text-secondary)]" />
+              <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
+                <Store className="w-8 h-8 text-gray-600" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-[var(--text-primary)]">
+                <h3 className="text-xl font-semibold text-gray-900">
                   {selectedMerchant.storeName}
                 </h3>
-                <p className="text-[var(--text-secondary)] mt-1">{selectedMerchant.ownerName}</p>
+                <p className="text-gray-600 mt-1">{selectedMerchant.ownerName}</p>
                 {getStatusBadge(selectedMerchant.status)}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-[var(--secondary)] rounded-lg p-4">
-                <p className="text-sm text-[var(--text-secondary)]">商品數量</p>
-                <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">商品數量</p>
+                <p className="text-2xl font-semibold text-gray-900 mt-1">
                   {selectedMerchant.productsCount}
                 </p>
               </div>
-              <div className="bg-[var(--secondary)] rounded-lg p-4">
-                <p className="text-sm text-[var(--text-secondary)]">總銷售額</p>
-                <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">總銷售額</p>
+                <p className="text-2xl font-semibold text-gray-900 mt-1">
                   NT${selectedMerchant.totalSales.toLocaleString()}
                 </p>
               </div>
@@ -462,7 +462,7 @@ export default function MerchantsPage() {
 
             <div>
               <div className="flex items-center gap-1">
-                <p className="text-sm text-[var(--text-secondary)]">評分</p>
+                <p className="text-sm text-gray-600">評分</p>
                 <div className="flex items-center gap-1 ml-2">
                   {[...Array(5)].map((_, i) => (
                     <Star
@@ -470,12 +470,12 @@ export default function MerchantsPage() {
                       className={cn(
                         'w-4 h-4',
                         i < Math.floor(selectedMerchant.rating)
-                          ? 'fill-[var(--warning)] text-[var(--warning)]'
-                          : 'text-[var(--border)]'
+                          ? 'fill-amber-500 text-amber-500'
+                          : 'text-gray-200'
                       )}
                     />
                   ))}
-                  <span className="ml-1 text-sm font-medium text-[var(--text-primary)]">
+                  <span className="ml-1 text-sm font-medium text-gray-900">
                     {selectedMerchant.rating > 0 ? selectedMerchant.rating : '尚無評分'}
                   </span>
                 </div>
@@ -484,29 +484,29 @@ export default function MerchantsPage() {
 
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">電子郵件</p>
-                <p className="text-[var(--text-primary)]">{selectedMerchant.email}</p>
+                <p className="text-sm text-gray-600">電子郵件</p>
+                <p className="text-gray-900">{selectedMerchant.email}</p>
               </div>
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">電話</p>
-                <p className="text-[var(--text-primary)]">{selectedMerchant.phone}</p>
+                <p className="text-sm text-gray-600">電話</p>
+                <p className="text-gray-900">{selectedMerchant.phone}</p>
               </div>
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">地址</p>
-                <p className="text-[var(--text-primary)]">{selectedMerchant.address}</p>
+                <p className="text-sm text-gray-600">地址</p>
+                <p className="text-gray-900">{selectedMerchant.address}</p>
               </div>
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">入駐日期</p>
-                <p className="text-[var(--text-primary)]">{formatDate(selectedMerchant.joinDate)}</p>
+                <p className="text-sm text-gray-600">入駐日期</p>
+                <p className="text-gray-900">{formatDate(selectedMerchant.joinDate)}</p>
               </div>
               <div>
-                <p className="text-sm text-[var(--text-secondary)]">商店描述</p>
-                <p className="text-[var(--text-primary)]">{selectedMerchant.description}</p>
+                <p className="text-sm text-gray-600">商店描述</p>
+                <p className="text-gray-900">{selectedMerchant.description}</p>
               </div>
               {selectedMerchant.status === 'rejected' && selectedMerchant.rejectReason && (
-                <div className="bg-[var(--error)]/10 rounded-lg p-4">
-                  <p className="text-sm text-[var(--error)] font-medium">拒絕原因</p>
-                  <p className="text-[var(--text-primary)] mt-1">{selectedMerchant.rejectReason}</p>
+                <div className="bg-red-100 rounded-lg p-4">
+                  <p className="text-sm text-red-500 font-medium">拒絕原因</p>
+                  <p className="text-gray-900 mt-1">{selectedMerchant.rejectReason}</p>
                 </div>
               )}
             </div>
@@ -517,8 +517,8 @@ export default function MerchantsPage() {
       <Modal isOpen={approveModalOpen} onClose={() => setApproveModalOpen(false)} title="確認核准" size="sm">
         {selectedMerchant && (
           <div className="space-y-4">
-            <p className="text-[var(--text-secondary)]">
-              確定要核准商家「<span className="font-medium text-[var(--text-primary)]">{selectedMerchant.storeName}</span>」的入駐申請嗎？
+            <p className="text-gray-600">
+              確定要核准商家「<span className="font-medium text-gray-900">{selectedMerchant.storeName}</span>」的入駐申請嗎？
             </p>
             <div className="flex gap-3 justify-end">
               <Button variant="ghost" onClick={() => setApproveModalOpen(false)}>
@@ -533,11 +533,11 @@ export default function MerchantsPage() {
       <Modal isOpen={rejectModalOpen} onClose={() => setRejectModalOpen(false)} title="拒絕申請" size="md">
         {selectedMerchant && (
           <div className="space-y-4">
-            <p className="text-[var(--text-secondary)]">
-              確定要拒絕商家「<span className="font-medium text-[var(--text-primary)]">{selectedMerchant.storeName}</span>」的入駐申請嗎？
+            <p className="text-gray-600">
+              確定要拒絕商家「<span className="font-medium text-gray-900">{selectedMerchant.storeName}</span>」的入駐申請嗎？
             </p>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 拒絕原因（必填）
               </label>
               <textarea
@@ -545,7 +545,7 @@ export default function MerchantsPage() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="請輸入拒絕原因..."
                 rows={4}
-                className="w-full px-3 py-2 bg-[var(--secondary)] border border-[var(--border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] resize-none"
+                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 resize-none"
               />
             </div>
             <div className="flex gap-3 justify-end">

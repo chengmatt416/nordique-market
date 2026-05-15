@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card, Input } from '@/components/ui';
+import { BrandConfig } from '@/config/brand';
+import { cn } from '@/lib/utils';
 import {
   Shield,
   KeyRound,
@@ -99,20 +101,20 @@ export default function AdminOnboarding() {
 
   if (isSetupComplete) {
     return (
-      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center px-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="text-center max-w-md"
         >
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
             設定完成！
           </h1>
-          <p className="text-[var(--text-secondary)] mb-8">
+          <p className="text-gray-600 mb-8">
             管理員帳戶已成功設定。現在您可以登入管理後台開始管理系統。
           </p>
           <Button onClick={() => router.push('/admin')}>
@@ -124,32 +126,34 @@ export default function AdminOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="w-full max-w-lg mx-auto px-6 pt-12 pb-8">
         <div className="flex items-center justify-between mb-8">
           {STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                className={cn(
+                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300',
                   index <= currentStep
-                    ? 'bg-[var(--primary)] text-white'
-                    : 'bg-[var(--border)] text-[var(--text-muted)]'
-                }`}
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-200 text-gray-400'
+                )}
               >
                 <step.icon className="w-5 h-5" />
               </div>
               {index < STEPS.length - 1 && (
                 <div
-                  className={`w-16 h-0.5 mx-2 transition-all duration-300 ${
-                    index < currentStep ? 'bg-[var(--primary)]' : 'bg-[var(--border)]'
-                  }`}
+                  className={cn(
+                    'w-16 h-0.5 mx-2 transition-all duration-300',
+                    index < currentStep ? 'bg-indigo-600' : 'bg-gray-200'
+                  )}
                 />
               )}
             </div>
           ))}
         </div>
 
-        <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2 px-1">
+        <div className="flex justify-between text-xs text-gray-400 mt-2 px-1">
           {STEPS.map((step) => (
             <span key={step.id} className="text-center" style={{ width: '70px' }}>
               {step.title}
@@ -177,26 +181,26 @@ export default function AdminOnboarding() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
                   >
-                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] flex items-center justify-center">
+                    <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-600 to-pink-400 flex items-center justify-center">
                       <Shield className="w-12 h-12 text-white" />
                     </div>
                   </motion.div>
-                  <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
                     管理員設定
                   </h1>
-                  <p className="text-[var(--text-secondary)] mb-8 max-w-sm mx-auto">
-                    歡迎使用 AURA 管理系統。此設定精靈將引導您完成管理員帳戶的初始配置。
+                  <p className="text-gray-600 mb-8 max-w-sm mx-auto">
+                    歡迎使用 {BrandConfig.name} 管理系統。此設定精靈將引導您完成管理員帳戶的初始配置。
                   </p>
-                  <div className="bg-[var(--surface)] rounded-[var(--radius-md)] p-4 mb-8 text-left">
+                  <div className="bg-white rounded-xl p-4 mb-8 text-left">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--warning)]/20 flex items-center justify-center flex-shrink-0">
-                        <KeyRound className="w-4 h-4 text-[var(--warning)]" />
+                      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <KeyRound className="w-4 h-4 text-amber-500" />
                       </div>
                       <div>
-                        <div className="font-medium text-[var(--text-primary)] text-sm">
+                        <div className="font-medium text-gray-900 text-sm">
                           安全提示
                         </div>
-                        <div className="text-xs text-[var(--text-muted)] mt-1">
+                        <div className="text-xs text-gray-400 mt-1">
                           請妥善保管您的管理員驗證碼，切勿洩露給他人。
                         </div>
                       </div>
@@ -211,10 +215,10 @@ export default function AdminOnboarding() {
 
               {currentStep === 1 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     驗證管理員
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     請輸入您收到的管理員驗證碼
                   </p>
                   <Card className="p-6">
@@ -242,10 +246,10 @@ export default function AdminOnboarding() {
 
               {currentStep === 2 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                     管理員資料
                   </h2>
-                  <p className="text-[var(--text-secondary)] mb-6 text-center">
+                  <p className="text-gray-600 mb-6 text-center">
                     設定您的管理員名稱和初始密碼
                   </p>
                   <div className="space-y-4">
@@ -258,7 +262,7 @@ export default function AdminOnboarding() {
                     />
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-[var(--text-primary)]">
+                      <label className="text-sm font-medium text-gray-900">
                         密碼
                       </label>
                       <div className="relative">
@@ -272,20 +276,20 @@ export default function AdminOnboarding() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                       {formData.password.length > 0 && formData.password.length < 8 && (
-                        <span className="text-xs text-[var(--error)]">
+                        <span className="text-xs text-red-500">
                           密碼長度至少需要 8 個字元
                         </span>
                       )}
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-[var(--text-primary)]">
+                      <label className="text-sm font-medium text-gray-900">
                         確認密碼
                       </label>
                       <div className="relative">
@@ -299,13 +303,13 @@ export default function AdminOnboarding() {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900"
                         >
                           {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                       {formData.confirmPassword.length > 0 && formData.password !== formData.confirmPassword && (
-                        <span className="text-xs text-[var(--error)]">
+                        <span className="text-xs text-red-500">
                           兩次輸入的密碼不相符
                         </span>
                       )}
@@ -318,7 +322,7 @@ export default function AdminOnboarding() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--background)] to-transparent">
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-50 to-transparent">
         <div className="max-w-md mx-auto flex gap-4">
           {currentStep > 0 && (
             <Button variant="outline" onClick={handleBack} className="flex-1">

@@ -236,7 +236,7 @@ export default function MerchantProductsPage() {
     <MerchantLayout>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-[var(--text-primary)]">商品管理</h1>
+          <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
           <Button onClick={openAddModal}>
             <Plus className="w-4 h-4" />
             新增商品
@@ -265,10 +265,10 @@ export default function MerchantProductsPage() {
                     setCurrentPage(1);
                   }}
                   className={cn(
-                    'px-4 py-2 rounded-[var(--radius-sm)] text-sm font-medium transition-colors',
+                    'px-4 py-2 rounded-md text-sm font-medium transition-colors',
                     filterStatus === status
-                      ? 'bg-[var(--primary)] text-white'
-                      : 'bg-[var(--secondary)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-200'
                   )}
                 >
                   {status === 'all' ? '全部' : statusLabels[status as ProductStatus]}
@@ -282,23 +282,23 @@ export default function MerchantProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--border)]">
-                  <th className="text-left p-4 text-sm font-medium text-[var(--text-secondary)]">
+                <tr className="border-b border-gray-200">
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
                     商品
                   </th>
-                  <th className="text-left p-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="text-left p-4 text-sm font-medium text-gray-600">
                     分類
                   </th>
-                  <th className="text-right p-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="text-right p-4 text-sm font-medium text-gray-600">
                     價格
                   </th>
-                  <th className="text-right p-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="text-right p-4 text-sm font-medium text-gray-600">
                     庫存
                   </th>
-                  <th className="text-center p-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="text-center p-4 text-sm font-medium text-gray-600">
                     狀態
                   </th>
-                  <th className="text-right p-4 text-sm font-medium text-[var(--text-secondary)]">
+                  <th className="text-right p-4 text-sm font-medium text-gray-600">
                     操作
                   </th>
                 </tr>
@@ -306,7 +306,7 @@ export default function MerchantProductsPage() {
               <tbody>
                 {paginatedProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-8 text-[var(--text-muted)]">
+                    <td colSpan={6} className="text-center p-8 text-gray-400">
                       找不到商品
                     </td>
                   </tr>
@@ -314,11 +314,11 @@ export default function MerchantProductsPage() {
                   paginatedProducts.map((product) => (
                     <tr
                       key={product.id}
-                      className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--secondary)]/50 transition-colors"
+                      className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-[var(--radius-sm)] overflow-hidden bg-[var(--secondary)] flex-shrink-0">
+                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-50 flex-shrink-0">
                             <img
                               src={`https://picsum.photos/seed/${product.image}/100/100`}
                               alt={product.name}
@@ -326,20 +326,20 @@ export default function MerchantProductsPage() {
                             />
                           </div>
                           <div>
-                            <p className="font-medium text-[var(--text-primary)]">{product.name}</p>
-                            <p className="text-sm text-[var(--text-muted)] line-clamp-1 max-w-xs">
+                            <p className="font-medium text-gray-900">{product.name}</p>
+                            <p className="text-sm text-gray-400 line-clamp-1 max-w-xs">
                               {product.description}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-sm text-[var(--text-secondary)]">{product.category}</td>
+                      <td className="p-4 text-sm text-gray-600">{product.category}</td>
                       <td className="p-4 text-right">
-                        <p className="font-medium text-[var(--text-primary)]">
+                        <p className="font-medium text-gray-900">
                           {formatPrice(product.price)}
                         </p>
                         {product.originalPrice > product.price && (
-                          <p className="text-sm text-[var(--text-muted)] line-through">
+                          <p className="text-sm text-gray-400 line-through">
                             {formatPrice(product.originalPrice)}
                           </p>
                         )}
@@ -349,10 +349,10 @@ export default function MerchantProductsPage() {
                           className={cn(
                             'font-medium',
                             product.stock === 0
-                              ? 'text-[var(--error)]'
+                              ? 'text-red-500'
                               : product.stock < 5
-                              ? 'text-[var(--warning)]'
-                              : 'text-[var(--text-primary)]'
+                              ? 'text-amber-500'
+                              : 'text-gray-900'
                           )}
                         >
                           {product.stock}
@@ -377,7 +377,7 @@ export default function MerchantProductsPage() {
                             size="sm"
                             onClick={() => openDeleteModal(product)}
                           >
-                            <Trash2 className="w-4 h-4 text-[var(--error)]" />
+                            <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         </div>
                       </td>
@@ -389,7 +389,7 @@ export default function MerchantProductsPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 p-4 border-t border-[var(--border)]">
+            <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-200">
               <Button
                 variant="outline"
                 size="sm"
@@ -398,7 +398,7 @@ export default function MerchantProductsPage() {
               >
                 上一頁
               </Button>
-              <span className="text-sm text-[var(--text-secondary)]">
+              <span className="text-sm text-gray-600">
                 第 {currentPage} / {totalPages} 頁
               </span>
               <Button
@@ -428,17 +428,17 @@ export default function MerchantProductsPage() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[var(--text-primary)]">商品描述</label>
+              <label className="text-sm font-medium text-gray-900">商品描述</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="請輸入商品描述"
                 rows={3}
                 className={cn(
-                  'w-full px-3 py-2 rounded-[var(--radius-sm)] border border-[var(--border)] bg-white',
-                  'text-[var(--text-primary)] placeholder:text-[var(--text-muted)]',
+                  'w-full px-3 py-2 rounded-md border border-gray-200 bg-white',
+                  'text-gray-900 placeholder:text-gray-400',
                   'transition-all duration-150',
-                  'focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20'
+                  'focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20'
                 )}
               />
             </div>
@@ -462,15 +462,15 @@ export default function MerchantProductsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-[var(--text-primary)]">分類</label>
+                <label className="text-sm font-medium text-gray-900">分類</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className={cn(
-                    'w-full h-10 px-3 rounded-[var(--radius-sm)] border border-[var(--border)] bg-white',
-                    'text-[var(--text-primary)]',
+                    'w-full h-10 px-3 rounded-md border border-gray-200 bg-white',
+                    'text-gray-900',
                     'transition-all duration-150',
-                    'focus:outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20'
+                    'focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20'
                   )}
                 >
                   {categories.map((cat) => (
@@ -490,12 +490,12 @@ export default function MerchantProductsPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-[var(--text-primary)]">商品圖片</label>
+              <label className="text-sm font-medium text-gray-900">商品圖片</label>
               <div
                 className={cn(
-                  'border-2 border-dashed border-[var(--border)] rounded-[var(--radius-md)] p-8',
+                  'border-2 border-dashed border-gray-200 rounded-lg p-8',
                   'flex flex-col items-center justify-center gap-2',
-                  'text-[var(--text-muted)] hover:border-[var(--accent)] transition-colors cursor-pointer'
+                  'text-gray-400 hover:border-pink-400 transition-colors cursor-pointer'
                 )}
               >
                 <ImageIcon className="w-8 h-8" />
@@ -522,8 +522,8 @@ export default function MerchantProductsPage() {
           size="sm"
         >
           <div className="flex flex-col gap-4">
-            <p className="text-[var(--text-secondary)]">
-              確定要刪除「<span className="font-medium text-[var(--text-primary)]">{productToDelete?.name}</span>」嗎？
+            <p className="text-gray-600">
+              確定要刪除「<span className="font-medium text-gray-900">{productToDelete?.name}</span>」嗎？
               此操作無法撤銷。
             </p>
             <div className="flex gap-3">

@@ -1,180 +1,148 @@
 'use client';
-
 import { useState } from 'react';
+import { ClientLayout } from '@/components/layout/ClientLayout';
+import { Button, Badge, Card } from '@/components/ui';
+import { useToast } from '@/components/ui/Toast';
+import { formatPrice, cn } from '@/lib/utils';
+import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, ArrowLeft } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ClientLayout } from '@/components/layout/ClientLayout';
-import { Button, Badge } from '@/components/ui';
-import { formatPrice, cn, calculateDiscount } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RotateCcw } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
 
-const sampleProduct = {
+const PRODUCT = {
   id: '1',
-  name: '北歐簡約陶瓷花瓶',
-  price: 1299,
-  originalPrice: 1999,
-  rating: 4.8,
-  reviews: 236,
-  stock: true,
-  description: '採用優質陶瓷素材，簡約的北歐風格設計，適合各種室內裝潢風格。精細的手工製作，每一件都是獨一無二的藝術品。適用於客廳、臥室或書房，為您的空間增添優雅的氣息。',
-  specs: [
-    { label: '材質', value: '優質陶瓷' },
-    { label: '尺寸', value: '高 25cm x 寬 12cm' },
-    { label: '重量', value: '約 800g' },
-    { label: '產地', value: '中國' },
-    { label: '保固', value: '6 個月' },
+  name: 'Nordique 極簡羊毛大衣',
+  price: 4580,
+  originalPrice: 5980,
+  discount: 23,
+  stock: 12,
+  images: [
+    'https://picsum.photos/seed/coat-main/800/800',
+    'https://picsum.photos/seed/coat-1/800/800',
+    'https://picsum.photos/seed/coat-2/800/800',
+    'https://picsum.photos/seed/coat-3/800/800',
+    'https://picsum.photos/seed/coat-4/800/800',
   ],
-  images: ['vase-1', 'vase-2', 'vase-3', 'vase-4', 'vase-5'],
+  description:
+    '採用100%純羊毛面料，極簡線條設計，寬鬆版型適合層次穿搭。內裡採用絲滑緞面，保暖舒適不顯臃腫。經典翻領與雙排扣設計，展現北歐質感生活美學。',
+  specs: [
+    { label: '材質', value: '100% 純羊毛' },
+    { label: '版型', value: '寬鬆落肩' },
+    { label: '重量', value: '約 1.2 kg' },
+    { label: '產地', value: '義大利' },
+    { label: '洗滌', value: '建議乾洗' },
+  ],
+  sizes: ['S', 'M', 'L', 'XL'],
+  colors: [
+    { name: '焦糖棕', hex: '#C4956A' },
+    { name: '深墨黑', hex: '#2D2D2D' },
+    { name: '燕麥白', hex: '#F5F0E8' },
+  ],
+  reviews: [
+    { id: 1, user: '林小姐', rating: 5, comment: '質感超好，穿起來很挺，非常滿意！', date: '2026-05-10' },
+    { id: 2, user: '陳先生', rating: 4, comment: '版型很好看，但運送有點慢。', date: '2026-04-28' },
+    { id: 3, user: '黃小姐', rating: 5, comment: '第二次購買了，品質超讚，會繼續回購。', date: '2026-04-15' },
+    { id: 4, user: '張先生', rating: 4, comment: '顏色跟照片一樣，布料也很舒服。', date: '2026-03-30' },
+  ],
 };
 
-const reviews = [
-  { id: 1, user: '林小姐', rating: 5, date: '2024-01-15', content: '非常漂亮的花瓶，和我家裝修風格很搭！包裝也很用心，沒有任何損壞。' },
-  { id: 2, user: '王小明', rating: 4, date: '2024-01-10', content: '質量很好，物流也很快。就是希望能有多一點顏色可以選擇。' },
-  { id: 3, user: '陳小姐', rating: 5, date: '2024-01-05', content: '性價比很高，已經回購第二個了！' },
-  { id: 4, user: '張先生', rating: 5, date: '2024-01-01', content: '送禮也很合適，朋友很喜歡！' },
+const SIMILAR_PRODUCTS = [
+  { id: '2', name: '羊毛混紡圍巾', price: 1280, image: 'https://picsum.photos/seed/sim-1/400/400' },
+  { id: '3', name: '針織毛帽', price: 890, image: 'https://picsum.photos/seed/sim-2/400/400' },
+  { id: '4', name: '皮革手套', price: 1580, image: 'https://picsum.photos/seed/sim-3/400/400' },
+  { id: '5', name: '羊毛長襪', price: 420, image: 'https://picsum.photos/seed/sim-4/400/400' },
 ];
 
-const similarProducts = [
-  { id: '2', name: '純手工羊毛抱枕', price: 899, originalPrice: 1499, rating: 4.9, image: 'pillow-2' },
-  { id: '3', name: '實木多功能收納架', price: 2599, originalPrice: 3299, rating: 4.7, image: 'shelf-3' },
-  { id: '4', name: 'LED智能北歐桌燈', price: 1899, originalPrice: 2499, rating: 4.6, image: 'lamp-4' },
-  { id: '6', name: '創意幾何地毯', price: 2199, originalPrice: 2999, rating: 4.5, image: 'rug-6' },
-];
-
-const sizes = ['S', 'M', 'L', 'XL'];
-const colors = ['黑色', '白色', '藍色'];
-
-export default function ProductPage() {
+export default function ProductDetailPage() {
   const params = useParams();
   const { showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  const discount = calculateDiscount(sampleProduct.originalPrice, sampleProduct.price);
-  const imageUrl = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`;
-
-  const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) {
-      showToast('請選擇尺寸和顏色', 'warning');
-      return;
-    }
-    showToast('已加入購物車', 'success');
+  const addToCart = () => {
+    showToast(`已加入購物車: ${PRODUCT.name} x${quantity}`, 'success');
   };
-
-  const tabs = [
-    { id: 'description', label: '商品描述' },
-    { id: 'specs', label: '規格資訊' },
-    { id: 'reviews', label: '評價' },
-  ];
 
   return (
     <ClientLayout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6"
-      >
-        <div className="flex items-center gap-2 text-sm text-[var(--text-muted)] mb-6">
-          <Link href="/" className="hover:text-[var(--primary)]">首頁</Link>
-          <span>/</span>
-          <Link href="/search" className="hover:text-[var(--primary)]">商品</Link>
-          <span>/</span>
-          <span className="text-[var(--text-primary)]">{sampleProduct.name}</span>
-        </div>
+      <div className="min-h-screen bg-gray-50 py-6">
+        <div className="mx-auto max-w-6xl px-4">
+          {/* Back Button */}
+          <Link
+            href="/client/products"
+            className="mb-4 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            返回商品列表
+          </Link>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="space-y-4">
-            <div className="relative aspect-square rounded-[var(--radius-lg)] overflow-hidden bg-[var(--secondary)]">
-              <img
-                src={imageUrl(sampleProduct.images[selectedImage])}
-                alt={sampleProduct.name}
-                className="w-full h-full object-cover"
-              />
-              <Badge variant="error" className="absolute top-4 left-4">
-                {discount}% OFF
-              </Badge>
-            </div>
-            <div className="grid grid-cols-5 gap-2">
-              {sampleProduct.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={cn(
-                    'aspect-square rounded-[var(--radius-md)] overflow-hidden border-2 transition-all',
-                    selectedImage === idx
-                      ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]/20'
-                      : 'border-transparent hover:border-[var(--border)]'
-                  )}
-                >
-                  <img
-                    src={imageUrl(img)}
-                    alt={`${sampleProduct.name} ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-6">
+          {/* Main Section */}
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Image Gallery */}
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3">
-                {sampleProduct.name}
-              </h1>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={cn(
-                        'w-4 h-4',
-                        i < Math.floor(sampleProduct.rating)
-                          ? 'fill-[var(--warning)] text-[var(--warning)]'
-                          : 'fill-none text-[var(--border)]'
-                      )}
+              <div className="mb-3 overflow-hidden rounded-xl bg-white">
+                <img
+                  src={PRODUCT.images[selectedImage]}
+                  alt={PRODUCT.name}
+                  className="aspect-square w-full object-cover"
+                />
+              </div>
+              <div className="flex gap-2">
+                {PRODUCT.images.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={cn(
+                      'h-20 w-20 overflow-hidden rounded-lg border-2 transition-colors',
+                      selectedImage === index
+                        ? 'border-indigo-600'
+                        : 'border-gray-200 hover:border-gray-400'
+                    )}
+                  >
+                    <img
+                      src={img}
+                      alt={`${PRODUCT.name} ${index + 1}`}
+                      className="h-full w-full object-cover"
                     />
-                  ))}
-                </div>
-                <span className="text-sm text-[var(--text-secondary)]">
-                  {sampleProduct.rating} ({sampleProduct.reviews} 評價)
-                </span>
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-[var(--primary)]">
-                {formatPrice(sampleProduct.price)}
-              </span>
-              <span className="text-lg text-[var(--text-muted)] line-through">
-                {formatPrice(sampleProduct.originalPrice)}
-              </span>
-            </div>
+            {/* Product Info */}
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{PRODUCT.name}</h1>
 
-            <Badge variant="success" className="text-sm">
-              尚有庫存
-            </Badge>
+              <div className="mt-3 flex items-center gap-3">
+                <span className="text-2xl font-bold text-indigo-600">
+                  {formatPrice(PRODUCT.price)}
+                </span>
+                <span className="text-gray-400 line-through">
+                  {formatPrice(PRODUCT.originalPrice)}
+                </span>
+                <Badge className="bg-pink-400 text-white">-{PRODUCT.discount}%</Badge>
+              </div>
 
-            <div className="space-y-4 pt-4 border-t border-[var(--border)]">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  尺寸
-                </label>
+              <p className="mt-3 text-sm text-green-600">尚有庫存</p>
+
+              {/* Size Selector */}
+              <div className="mt-6">
+                <p className="mb-2 text-sm font-medium text-gray-900">
+                  尺寸：<span className="text-gray-600">{selectedSize}</span>
+                </p>
                 <div className="flex gap-2">
-                  {sizes.map((size) => (
+                  {PRODUCT.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={cn(
-                        'min-w-[48px] h-10 px-3 rounded-[var(--radius-sm)] border transition-all',
+                        'rounded-lg border-2 px-4 py-2 text-sm font-medium transition-colors',
                         selectedSize === size
-                          ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--primary)] font-medium'
-                          : 'border-[var(--border)] hover:border-[var(--accent)]'
+                          ? 'border-indigo-600 bg-indigo-600 text-white'
+                          : 'border-gray-200 bg-white text-gray-900 hover:border-gray-400'
                       )}
                     >
                       {size}
@@ -183,222 +151,211 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  顏色
-                </label>
-                <div className="flex gap-2">
-                  {colors.map((color) => (
+              {/* Color Selector */}
+              <div className="mt-4">
+                <p className="mb-2 text-sm font-medium text-gray-900">
+                  顏色：<span className="text-gray-600">{PRODUCT.colors[selectedColor].name}</span>
+                </p>
+                <div className="flex gap-3">
+                  {PRODUCT.colors.map((color, index) => (
                     <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
+                      key={color.hex}
+                      onClick={() => setSelectedColor(index)}
                       className={cn(
-                        'min-w-[80px] h-10 px-3 rounded-[var(--radius-sm)] border transition-all',
-                        selectedColor === color
-                          ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--primary)] font-medium'
-                          : 'border-[var(--border)] hover:border-[var(--accent)]'
+                        'h-8 w-8 rounded-full border-2 transition-all',
+                        selectedColor === index
+                          ? 'ring-2 ring-indigo-600 ring-offset-2'
+                          : 'border-gray-200'
                       )}
-                    >
-                      {color}
-                    </button>
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                    />
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                  數量
-                </label>
-                <div className="flex items-center gap-3">
+              {/* Quantity */}
+              <div className="mt-6">
+                <p className="mb-2 text-sm font-medium text-gray-900">數量</p>
+                <div className="flex items-center gap-0">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors flex items-center justify-center"
+                    className="rounded-l-lg border border-gray-200 bg-white p-3 text-gray-600 hover:bg-gray-50"
+                    disabled={quantity <= 1}
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(Math.min(99, quantity + 1))}
-                    className="w-10 h-10 rounded-[var(--radius-sm)] border border-[var(--border)] hover:border-[var(--accent)] transition-colors flex items-center justify-center"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                variant="primary"
-                size="lg"
-                className="flex-1"
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                加入購物車
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="px-4"
-              >
-                <Heart className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
-              <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                <Truck className="w-4 h-4" />
-                <span>快速配送</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                <Shield className="w-4 h-4" />
-                <span>品質保證</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                <RotateCcw className="w-4 h-4" />
-                <span>7天退換</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b border-[var(--border)] mb-6">
-          <div className="flex gap-6">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  'pb-3 text-sm font-medium transition-colors border-b-2 -mb-[1px]',
-                  activeTab === tab.id
-                    ? 'border-[var(--accent)] text-[var(--primary)]'
-                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mb-12">
-          {activeTab === 'description' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="prose prose-sm max-w-none text-[var(--text-secondary)] leading-relaxed"
-            >
-              <p>{sampleProduct.description}</p>
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-              <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            </motion.div>
-          )}
-
-          {activeTab === 'specs' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <table className="w-full">
-                <tbody>
-                  {sampleProduct.specs.map((spec, idx) => (
-                    <tr key={spec.label} className={cn(idx !== sampleProduct.specs.length - 1 && 'border-b border-[var(--border)]')}>
-                      <td className="py-3 text-sm font-medium text-[var(--text-primary)] w-32">
-                        {spec.label}
-                      </td>
-                      <td className="py-3 text-sm text-[var(--text-secondary)]">
-                        {spec.value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          )}
-
-          {activeTab === 'reviews' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
-            >
-              {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="p-4 bg-[var(--surface)] rounded-[var(--radius-md)] border border-[var(--border)]"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-[var(--text-primary)]">{review.user}</span>
-                      <div className="flex items-center gap-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              'w-3 h-3',
-                              i < review.rating
-                                ? 'fill-[var(--warning)] text-[var(--warning)]'
-                                : 'fill-none text-[var(--border)]'
-                            )}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <span className="text-xs text-[var(--text-muted)]">{review.date}</span>
-                  </div>
-                  <p className="text-sm text-[var(--text-secondary)]">{review.content}</p>
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </div>
-
-        <section>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6">相似商品</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {similarProducts.map((product) => (
-              <Link key={product.id} href={`/client/product/${product.id}`}>
-                <div className="bg-[var(--surface)] rounded-[var(--radius-md)] border border-[var(--border)] overflow-hidden hover:shadow-md transition-shadow">
-                  <img
-                    src={imageUrl(product.image)}
-                    alt={product.name}
-                    className="w-full aspect-square object-cover"
+                  <input
+                    type="text"
+                    value={quantity}
+                    readOnly
+                    className="w-14 border-y border-gray-200 bg-white py-3 text-center text-sm font-medium text-gray-900"
                   />
-                  <div className="p-3">
-                    <h3 className="text-sm font-medium text-[var(--text-primary)] truncate mb-1">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center gap-1 mb-1">
-                      <Star className="w-3 h-3 fill-[var(--warning)] text-[var(--warning)]" />
-                      <span className="text-xs text-[var(--text-secondary)]">{product.rating}</span>
-                    </div>
-                    <span className="text-sm font-bold text-[var(--primary)]">
-                      {formatPrice(product.price)}
-                    </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="rounded-r-lg border border-gray-200 bg-white p-3 text-gray-600 hover:bg-gray-50"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="mt-6 flex gap-3">
+                <Button
+                  onClick={addToCart}
+                  className="flex-1 rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700 sm:flex-none sm:px-10"
+                >
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  加入購物車
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-xl border-2 border-gray-200 px-6 py-3 font-medium text-gray-900 hover:bg-gray-50"
+                >
+                  立即購買
+                </Button>
+                <button
+                  onClick={() => setIsFavorited(!isFavorited)}
+                  className={cn(
+                    'flex h-12 w-12 items-center justify-center rounded-xl border-2 transition-colors',
+                    isFavorited
+                      ? 'border-pink-400 bg-pink-50 text-pink-400'
+                      : 'border-gray-200 bg-white text-gray-400 hover:text-gray-600'
+                  )}
+                >
+                  <Heart className={cn('h-5 w-5', isFavorited && 'fill-pink-400')} />
+                </button>
+              </div>
+
+              {/* Delivery Info */}
+              <div className="mt-6 space-y-2 rounded-xl bg-gray-50 p-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Truck className="h-4 w-4 text-gray-400" />
+                  全台快速配送，3-5天到貨
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Shield className="h-4 w-4 text-gray-400" />
+                  14天鑑賞期，安心退換貨
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs Section */}
+          <div className="mt-12">
+            <div className="flex border-b border-gray-200">
+              {[
+                { key: 'description', label: '商品描述' },
+                { key: 'specs', label: '規格資訊' },
+                { key: 'reviews', label: '評價' },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'px-6 py-3 text-sm font-medium transition-colors',
+                    activeTab === tab.key
+                      ? 'border-b-2 border-indigo-600 text-indigo-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              {activeTab === 'description' && (
+                <div className="rounded-xl bg-white p-6">
+                  <p className="leading-relaxed text-gray-600">{PRODUCT.description}</p>
+                </div>
+              )}
+
+              {activeTab === 'specs' && (
+                <div className="rounded-xl bg-white p-6">
+                  <div className="divide-y divide-gray-100">
+                    {PRODUCT.specs.map((spec) => (
+                      <div key={spec.label} className="flex py-3 first:pt-0 last:pb-0">
+                        <span className="w-32 text-sm text-gray-400">{spec.label}</span>
+                        <span className="text-sm font-medium text-gray-900">{spec.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      </motion.div>
+              )}
 
-      <div className="md:hidden fixed bottom-20 left-0 right-0 p-4 bg-gradient-to-t from-[var(--surface)] via-[var(--surface)] to-transparent z-40">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <span className="text-2xl font-bold text-[var(--primary)]">
-              {formatPrice(sampleProduct.price)}
-            </span>
+              {activeTab === 'reviews' && (
+                <div className="space-y-4">
+                  {PRODUCT.reviews.map((review) => (
+                    <Card key={review.id} className="rounded-xl bg-white p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600">
+                          {review.user.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900">{review.user}</p>
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={cn(
+                                  'h-3.5 w-3.5',
+                                  i < review.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-gray-200'
+                                )}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-400">{review.date}</span>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-gray-600">
+                        {review.comment}
+                      </p>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleAddToCart}
+
+          {/* Similar Products */}
+          <div className="mt-12">
+            <h2 className="mb-6 text-lg font-bold text-gray-900">你可能也會喜歡</h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {SIMILAR_PRODUCTS.map((product) => (
+                <Link key={product.id} href={`/client/product/${product.id}`}>
+                  <Card className="overflow-hidden rounded-xl bg-white transition-shadow hover:shadow-md">
+                    <div className="aspect-square overflow-hidden">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                      <p className="mt-1 text-sm font-semibold text-indigo-600">
+                        {formatPrice(product.price)}
+                      </p>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Floating Cart Button */}
+        <div className="fixed bottom-6 right-6 lg:hidden">
+          <button
+            onClick={addToCart}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700"
           >
-            <ShoppingCart className="w-5 h-5" />
-            加入購物車
-          </Button>
+            <ShoppingCart className="h-6 w-6" />
+          </button>
         </div>
       </div>
     </ClientLayout>
