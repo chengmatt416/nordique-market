@@ -23,15 +23,21 @@ export async function POST(request: NextRequest) {
     const existingDoc = await db.collection('users').doc(uid).get();
     if (existingDoc.exists) {
       const existing = existingDoc.data()!;
-      await db.collection('users').doc(uid).update({
+      const correctedRole = isAdminEmail(email) ? 'admin' : existing.role;
+      const updates: Record<string, unknown> = {
         name: name || existing.name || decodedToken.name || '',
         photoURL: photoURL || existing.photoURL || decodedToken.picture || '',
         lastLoginAt: FieldValue.serverTimestamp(),
-      });
+      };
+      if (correctedRole !== existing.role) {
+        updates.role = correctedRole;
+        await auth.setCustomUserClaims(uid, { role: correctedRole });
+      }
+      await db.collection('users').doc(uid).update(updates);
       return NextResponse.json({
         success: true,
         uid,
-        role: existing.role || 'customer',
+        role: correctedRole,
         existing: true,
       });
     }
@@ -77,13 +83,18 @@ export async function GET(request: NextRequest) {
     }
 
     const auth = getAdminAuth();
+    const db = getAdminDb();
     const idToken = authHeader.split('Bearer ')[1];
     const decodedToken = await auth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const userDoc = await db.collection('users').doc(uid).get();
+    const role = userDoc.exists ? (userDoc.data()?.role || 'customer') : (decodedToken as { role?: string }).role || 'customer';
 
     return NextResponse.json({
-      uid: decodedToken.uid,
+      uid,
       email: decodedToken.email,
-      role: (decodedToken as { role?: string }).role || 'customer',
+      role,
     });
   } catch (error) {
     console.error('Error verifying token:', error);
