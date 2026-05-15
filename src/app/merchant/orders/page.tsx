@@ -5,9 +5,7 @@ import { MerchantLayout } from '@/components/layout/MerchantLayout';
 import { Card, Badge, Button, Modal, Input } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Package, Eye, Truck, Search, User, MapPin, CreditCard } from 'lucide-react';
-
-const MERCHANT_ID = 'xxx';
+import { Package, Eye, Truck, Search, User, MapPin, CreditCard, AlertTriangle } from 'lucide-react';
 
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
 
@@ -77,7 +75,7 @@ export default function MerchantOrdersPage() {
     try {
       setLoading(true);
       setError(false);
-      const res = await fetch(`/api/orders?merchantId=${MERCHANT_ID}`);
+      const res = await fetch('/api/orders');
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       const list: Order[] = (data.orders || []).map((o: any) => ({
@@ -107,7 +105,7 @@ export default function MerchantOrdersPage() {
       const res = await fetch('/api/orders', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, merchantId: MERCHANT_ID, ...updates }),
+        body: JSON.stringify({ id, ...updates }),
       });
       if (!res.ok) throw new Error('Failed to update');
       await fetchOrders();

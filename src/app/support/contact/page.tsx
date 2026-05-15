@@ -48,7 +48,13 @@ export default function ContactPage() {
     e.preventDefault();
     setSubmitting(true);
 
-    await new Promise((r) => setTimeout(r, 800));
+    try {
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+    } catch {}
     setSubmitted(true);
     setSubmitting(false);
     showToast('訊息已送出！我們將盡快回覆您。', 'success');

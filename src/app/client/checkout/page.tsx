@@ -1,35 +1,16 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card, Badge } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Check, CreditCard, Building, Store, MapPin, Plus, ChevronRight } from 'lucide-react';
+import { Check, CreditCard, Building, Store, MapPin, Plus, ChevronRight, ShoppingBag } from 'lucide-react';
 
 const STEPS = [
   { label: '選擇商品', key: 1 },
   { label: '填寫資料', key: 2 },
   { label: '完成訂單', key: 3 },
-];
-
-const ORDER_ITEMS = [
-  {
-    id: 1,
-    name: 'Nordique 極簡木柄馬克杯',
-    variant: 'M / 霧黑色',
-    price: 680,
-    quantity: 2,
-    image: 'https://picsum.photos/seed/mug/120/120',
-  },
-  {
-    id: 2,
-    name: '羊毛編織蓋毯',
-    variant: 'L / 米白色',
-    price: 1280,
-    quantity: 1,
-    image: 'https://picsum.photos/seed/blanket/120/120',
-  },
 ];
 
 const PAYMENT_METHODS = [
@@ -38,27 +19,62 @@ const PAYMENT_METHODS = [
   { id: 'convenience', label: '超商繳費', icon: Store },
 ];
 
-const ADDRESSES = [
-  {
-    id: 'addr1',
-    name: '王小明',
-    phone: '0912-345-678',
-    address: '台北市信義區信義路五段7號',
-  },
-  {
-    id: 'addr2',
-    name: '王小明',
-    phone: '0928-765-432',
-    address: '台北市大安區敦化南路二段105號',
-  },
-];
+interface CheckoutItem {
+  id: string;
+  name: string;
+  variant: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+interface AddressItem {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+}
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(1);
-  const [selectedAddress, setSelectedAddress] = useState('addr1');
+  const [items, setItems] = useState<CheckoutItem[]>([]);
+  const [addresses, setAddresses] = useState<AddressItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedAddress, setSelectedAddress] = useState('');
   const [selectedPayment, setSelectedPayment] = useState('credit');
 
-  const subtotal = ORDER_ITEMS.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  useEffect(() => {
+    async function load() {
+      try {
+        const [cartRes, addrRes] = await Promise.all([
+          fetch('/api/orders?customerId=current'),
+          fetch('/api/users'),
+        ]);
+        if (cartRes.ok) {
+          const data = await cartRes.json();
+          if (data.orders?.length) {
+            const lastOrder = data.orders[0];
+            setItems(
+              (lastOrder.items || []).map((i: any) => ({
+                id: i.productId || i.id,
+                name: i.productName || '',
+                variant: i.variantName || '',
+                price: i.price || 0,
+                quantity: i.quantity || 1,
+                image: i.productImage || '',
+              }))
+            );
+          }
+        }
+      } catch {
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 1000 ? 0 : 80;
   const total = subtotal + shipping;
 
@@ -113,32 +129,47 @@ export default function CheckoutPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <Card className="mb-6 rounded-xl bg-white p-6">
-                <h2 className="mb-4 text-lg font-bold text-gray-900">訂單內容</h2>
-                <div className="divide-y divide-gray-100">
-                  {ORDER_ITEMS.map((item) => (
-                    <div key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="h-20 w-20 rounded-lg object-cover"
-                      />
-                      <div className="flex flex-1 flex-col justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900">{item.name}</h3>
-                          <p className="text-sm text-gray-400">{item.variant}</p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-indigo-600">
-                            {formatPrice(item.price)}
-                          </span>
-                          <span className="text-sm text-gray-600">x{item.quantity}</span>
+              {loading ? (
+                <Card className="mb-6 rounded-xl bg-white p-6 text-center">
+                  <p className="text-gray-500">載入中...</p>
+                </Card>
+              ) : items.length === 0 ? (
+                <Card className="mb-6 rounded-xl bg-white p-6 text-center">
+                  <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h2 className="text-lg font-medium text-gray-900 mb-2">購物車是空的</h2>
+                  <p className="text-sm text-gray-500 mb-6">請先將商品加入購物車</p>
+                  <Link href="/search">
+                    <Button>前往選購</Button>
+                  </Link>
+                </Card>
+              ) : (
+                <Card className="mb-6 rounded-xl bg-white p-6">
+                  <h2 className="mb-4 text-lg font-bold text-gray-900">訂單內容</h2>
+                  <div className="divide-y divide-gray-100">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                        <img
+                          src={item.image || `https://picsum.photos/seed/${item.id}/120/120`}
+                          alt={item.name}
+                          className="h-20 w-20 rounded-lg object-cover"
+                        />
+                        <div className="flex flex-1 flex-col justify-between">
+                          <div>
+                            <h3 className="font-medium text-gray-900">{item.name}</h3>
+                            <p className="text-sm text-gray-400">{item.variant}</p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-indigo-600">
+                              {formatPrice(item.price)}
+                            </span>
+                            <span className="text-sm text-gray-600">x{item.quantity}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                </Card>
+              )}
 
               <Button
                 onClick={() => setStep(2)}
@@ -161,7 +192,10 @@ export default function CheckoutPage() {
               <Card className="mb-6 rounded-xl bg-white p-6">
                 <h2 className="mb-4 text-lg font-bold text-gray-900">運送地址</h2>
                 <div className="space-y-3">
-                  {ADDRESSES.map((addr) => (
+                  {addresses.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center py-4">請先新增運送地址</p>
+                  ) : (
+                    addresses.map((addr) => (
                     <label
                       key={addr.id}
                       className={cn(
@@ -190,7 +224,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                     </label>
-                  ))}
+                  )))}
                 </div>
                 <Button
                   variant="ghost"
@@ -258,7 +292,22 @@ export default function CheckoutPage() {
               </Card>
 
               <Button
-                onClick={() => setStep(3)}
+                onClick={async () => {
+                  try {
+                    await fetch('/api/orders', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        items,
+                        totalAmount: total,
+                        shippingFee: shipping,
+                        paymentMethod: selectedPayment,
+                        shippingAddress: addresses.find(a => a.id === selectedAddress),
+                      }),
+                    });
+                  } catch {}
+                  setStep(3);
+                }}
                 className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700"
               >
                 確認送出

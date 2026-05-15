@@ -38,7 +38,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
                 </button>
               </div>
             )}
-            <div className="p-4">{children}</div>
+            <div className="p-4 max-h-[75vh] overflow-y-auto">{children}</div>
           </motion.div>
         </div>
       )}

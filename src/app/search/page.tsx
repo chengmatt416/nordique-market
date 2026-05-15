@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Clock, Star, SlidersHorizontal, TrendingUp } from 'lucide-react';
 import { Button, Badge, Card, ProductCardSkeleton } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
+import { deobfuscate, deobfuscatePrice, deobfuscateProduct } from '@/lib/crypto';
 import { BrandConfig } from '@/config/brand';
 
 type Product = {
@@ -149,16 +150,20 @@ export default function SearchPage() {
       const data = await res.json();
       if (Array.isArray(data.products)) {
         setSuggestions(
-          data.products.map((item: Record<string, unknown>) => ({
-            id: String(item.id ?? ''),
-            name: String(item.name ?? ''),
-            price: Number(item.price ?? 0),
-            originalPrice: item.originalPrice != null ? Number(item.originalPrice) : undefined,
-            rating: Number(item.rating ?? 0),
-            reviewCount: Number(item.reviewCount ?? item.review_count ?? 0),
-            images: Array.isArray(item.images) ? item.images.map(String) : [],
-            category: String(item.category ?? ''),
-          }))
+          data.products.map((item: Record<string, unknown>) => {
+            const id = String(item.id ?? '');
+            const decrypted = item._e ? deobfuscateProduct(item) : item;
+            return {
+              id,
+              name: String(decrypted.name ?? ''),
+              price: Number(decrypted.price ?? 0),
+              originalPrice: decrypted.originalPrice != null ? Number(decrypted.originalPrice) : undefined,
+              rating: Number(item.rating ?? 0),
+              reviewCount: Number(item.reviewCount ?? item.review_count ?? 0),
+              images: Array.isArray(item.images) ? item.images.map(String) : [],
+              category: String(item.category ?? ''),
+            };
+          })
         );
         setShowSuggestions(true);
       }
@@ -213,16 +218,20 @@ export default function SearchPage() {
       let results: Product[] = [];
 
       if (Array.isArray(data.products)) {
-        results = data.products.map((item: Record<string, unknown>) => ({
-          id: String(item.id ?? ''),
-          name: String(item.name ?? ''),
-          price: Number(item.price ?? 0),
-          originalPrice: item.originalPrice != null ? Number(item.originalPrice) : undefined,
-          rating: Number(item.rating ?? 0),
-          reviewCount: Number(item.reviewCount ?? item.review_count ?? 0),
-          images: Array.isArray(item.images) ? item.images.map(String) : [],
-          category: String(item.category ?? ''),
-        }));
+        results = data.products.map((item: Record<string, unknown>) => {
+          const id = String(item.id ?? '');
+          const decrypted = item._e ? deobfuscateProduct(item) : item;
+          return {
+            id,
+            name: String(decrypted.name ?? ''),
+            price: Number(decrypted.price ?? 0),
+            originalPrice: decrypted.originalPrice != null ? Number(decrypted.originalPrice) : undefined,
+            rating: Number(item.rating ?? 0),
+            reviewCount: Number(item.reviewCount ?? item.review_count ?? 0),
+            images: Array.isArray(item.images) ? item.images.map(String) : [],
+            category: String(item.category ?? ''),
+          };
+        });
       }
 
       if (selectedCategories.length > 1) {

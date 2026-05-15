@@ -142,7 +142,7 @@ export default function CustomerOnboarding() {
                     歡迎加入 {BrandConfig.name}
                   </h1>
                   <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                    探索來自北歐的優質商品，享受便捷的購物體驗。讓我們一起開始您的精緻生活之旅。
+                     探索來自世界各地的優質商品，享受便捷的購物體驗。讓我們一起開始您的精緻生活之旅。
                   </p>
                   <Button size="lg" onClick={handleNext}>
                     開始設定
@@ -276,7 +276,7 @@ export default function CustomerOnboarding() {
                       設定完成！
                     </h2>
                     <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                      您的個人化購物體驗已準備就緒。探索心儀的商品，開始您的北歐精緻生活吧！
+                       您的個人化購物體驗已準備就緒。探索心儀的商品，開始您的精緻生活吧！
                     </p>
                     <Button size="lg" onClick={handleComplete}>
                       探索商品

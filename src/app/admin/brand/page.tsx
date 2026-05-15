@@ -111,16 +111,19 @@ export default function BrandManagerPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const payload = { ...settings };
+      delete (payload as any).features;
+      delete (payload as any).categories;
       const res = await fetch('/api/brand', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (data.success) {
+      if (res.ok) {
         showToast('品牌設定已儲存', 'success');
       } else {
-        showToast('儲存失敗', 'error');
+        const data = await res.json().catch(() => ({}));
+        showToast(data?.error || `儲存失敗 (${res.status})`, 'error');
       }
     } catch {
       showToast('無法連線到伺服器', 'error');

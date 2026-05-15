@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MerchantLayout } from '@/components/layout/MerchantLayout';
 import { Card, Button, Input } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -18,16 +18,38 @@ const shippingMethods = [
 export default function MerchantSettings() {
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [storeName, setStoreName] = useState('北歐風情選物店');
-  const [description, setDescription] = useState('精選北歐設計傢俱與家飾品，帶給您簡約舒適的生活體驗。');
-  const [email, setEmail] = useState('contact@nordique.tw');
-  const [phone, setPhone] = useState('02-1234-5678');
+  const [storeName, setStoreName] = useState('');
+  const [description, setDescription] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [baseFee, setBaseFee] = useState('60');
-  const [bankName, setBankName] = useState('玉山銀行');
-  const [accountNumber, setAccountNumber] = useState('1234-5678-9012-3456');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
 
-  const [selectedShipping, setSelectedShipping] = useState<string[]>(['7-11', 'family', 'cat', 'post']);
+  const [selectedShipping, setSelectedShipping] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/brand');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && !data.error) {
+            setStoreName(data.storeName || '');
+            setDescription(data.description || '');
+            setEmail(data.contactEmail || '');
+            setPhone(data.contactPhone || '');
+          }
+        }
+      } catch {
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
 
   const toggleShipping = (id: string) => {
     setSelectedShipping((prev) =>
@@ -37,9 +59,24 @@ export default function MerchantSettings() {
 
   const handleSave = async () => {
     setSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      await fetch('/api/brand', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeName,
+          description,
+          contactEmail: email,
+          contactPhone: phone,
+          shippingMethods: selectedShipping,
+          baseFee,
+        }),
+      });
+      showToast('設定已成功儲存', 'success');
+    } catch {
+      showToast('儲存失敗', 'error');
+    }
     setSaving(false);
-    showToast('設定已成功儲存', 'success');
   };
 
   return (

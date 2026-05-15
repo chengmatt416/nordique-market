@@ -87,7 +87,7 @@ export default function LandingPage() {
           className="max-w-6xl mx-auto text-center"
         >
           <motion.div variants={fadeInUp} className="mb-4">
-            <Badge variant="accent">探索北歐光環，感受純淨生活之美</Badge>
+            <Badge variant="accent">探索精選商品，感受純淨生活之美</Badge>
           </motion.div>
           <motion.h1
             variants={fadeInUp}
@@ -101,7 +101,7 @@ export default function LandingPage() {
             variants={fadeInUp}
             className="text-base text-gray-500 mb-8 max-w-md mx-auto"
           >
-            精選來自北歐的優質商品，為您打造簡約舒適的家居生活體驗
+            精選來自世界各地的優質商品，為您打造舒適便利的生活體驗
           </motion.p>
           <motion.div
             variants={fadeInUp}
@@ -206,7 +206,7 @@ export default function LandingPage() {
             <div>
               <span className="text-xl font-bold text-gray-900">{brandName}</span>
               <p className="text-sm text-gray-500 mt-2 max-w-xs">
-                帶給您北歐極簡美學的購物體驗
+                帶給您美好的購物體驗
               </p>
             </div>
             <div className="grid grid-cols-2 gap-8 text-sm">

@@ -43,7 +43,6 @@ export function ClientNav() {
             </Link>
             <Link href="/client/cart" className="p-2 text-gray-500 hover:text-gray-900 transition-colors relative">
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-pink-400 text-white text-[10px] font-medium rounded-full flex items-center justify-center">3</span>
             </Link>
             <Link href="/auth/signin" className="p-2 text-gray-500 hover:text-gray-900 transition-colors">
               <User className="w-5 h-5" />

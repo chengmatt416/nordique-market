@@ -1,4 +1,7 @@
+import { deobfuscate, deobfuscatePrice, deobfuscateProduct, deobfuscateProducts } from './crypto';
+
 // API client — all data goes through Firebase API routes
+// Product data is obfuscated in transit and deobfuscated here
 // No mock data anywhere. If Firebase isn't configured, pages show setup instructions.
 
 export async function fetchJSON(url: string, options: RequestInit = {}) {
@@ -14,7 +17,11 @@ export async function fetchJSON(url: string, options: RequestInit = {}) {
 
 export function fetchProducts(params?: Record<string, string>) {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  return fetchJSON(`/api/products${qs}`);
+  return fetchJSON(`/api/products${qs}`).then((data: any) => ({
+    ...data,
+    products: deobfuscateProducts(data.products || []),
+    product: data.product ? deobfuscateProduct(data.product) : undefined,
+  }));
 }
 
 export function createProduct(data: Record<string, unknown>) {

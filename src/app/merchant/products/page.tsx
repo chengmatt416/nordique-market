@@ -6,8 +6,7 @@ import { Card, Badge, Button, Input, Modal } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
 import { Plus, Search, Edit, Trash2, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
-
-const MERCHANT_ID = 'xxx';
+import { deobfuscatePrice, deobfuscate, deobfuscateProduct } from '@/lib/crypto';
 
 type ProductStatus = 'active' | 'inactive' | 'pending';
 
@@ -73,20 +72,23 @@ export default function MerchantProductsPage() {
     try {
       setLoading(true);
       setError(false);
-      const res = await fetch(`/api/products?merchantId=${MERCHANT_ID}`);
+      const res = await fetch('/api/products');
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      const list: Product[] = (data.products || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description || '',
-        category: p.category || '',
-        price: p.price || 0,
-        originalPrice: p.originalPrice || p.price || 0,
-        stock: p.stock ?? 0,
-        status: p.status || 'pending',
-        image: p.image || '',
-      }));
+      const list: Product[] = (data.products || []).map((p: any) => {
+        const decrypted = p._e ? deobfuscateProduct(p) : p;
+        return {
+          id: p.id,
+          name: decrypted.name,
+          description: decrypted.description || '',
+          category: p.category || '',
+          price: decrypted.price || 0,
+          originalPrice: decrypted.originalPrice || decrypted.price || 0,
+          stock: p.stock ?? 0,
+          status: p.status || 'pending',
+          image: p.image || '',
+        };
+      });
       setProducts(list);
     } catch {
       setError(true);
@@ -145,7 +147,6 @@ export default function MerchantProductsPage() {
     setSaving(true);
     try {
       const body = {
-        merchantId: MERCHANT_ID,
         name: formData.name,
         description: formData.description,
         category: formData.category,
@@ -192,7 +193,7 @@ export default function MerchantProductsPage() {
 
     setDeleting(true);
     try {
-      const res = await fetch(`/api/products?id=${productToDelete.id}&merchantId=${MERCHANT_ID}`, {
+      const res = await fetch(`/api/products?id=${productToDelete.id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete');

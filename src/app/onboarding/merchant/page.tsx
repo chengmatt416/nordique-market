@@ -102,7 +102,22 @@ export default function MerchantOnboarding() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeName: formData.storeName,
+          description: formData.storeDescription,
+          email: formData.email,
+          phone: formData.phone,
+          bankAccount: formData.bankAccount,
+          shippingMethods: formData.shippingMethods,
+          baseShippingFee: formData.baseShippingFee,
+          role: 'merchant',
+        }),
+      });
+    } catch {}
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
@@ -217,7 +232,7 @@ export default function MerchantOnboarding() {
                   <div className="text-left max-w-md mx-auto space-y-4 mb-8">
                     {[
                       { title: '零成本開始', desc: '無初始費用，只需通過審核即可開店' },
-                      { title: '北歐優質客群', desc: '接觸注重品質的高端消費族群' },
+                      { title: '優質客群', desc: '接觸注重品質的高端消費族群' },
                       { title: '簡易管理後台', desc: '輕鬆管理商品、訂單和庫存' },
                       { title: '快速出金服務', desc: '銷售款項快速結算至您的帳戶' },
                     ].map((item, i) => (

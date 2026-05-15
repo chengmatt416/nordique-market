@@ -8,6 +8,7 @@ import { ProductCardSkeleton } from '@/components/ui/Skeleton';
 import { formatPrice, cn, calculateDiscount } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Star, ShoppingCart, Heart, Clock, Sparkles, ShoppingBag, Zap, ArrowRight, AlertTriangle } from 'lucide-react';
+import { deobfuscateProduct } from '@/lib/crypto';
 
 interface Product {
   id: string;
@@ -158,7 +159,8 @@ export default function HomePage() {
           return;
         }
         const data = await res.json();
-        setProducts(data.products || []);
+        const raw = data.products || [];
+        setProducts(Array.isArray(raw) ? raw.map((p: any) => p._e ? deobfuscateProduct(p) : p) : []);
       } catch {
         setError('fetch_failed');
       } finally {
@@ -188,7 +190,7 @@ export default function HomePage() {
               探索精選商品
             </h1>
             <p className="text-white/80 text-lg mb-6 max-w-lg">
-              從北歐設計美學中尋找靈感，為您的家居生活注入簡約與舒適的完美平衡
+               從設計美學中尋找靈感，為您的家居生活注入簡約與舒適的完美平衡
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/search">

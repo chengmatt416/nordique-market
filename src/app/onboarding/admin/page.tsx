@@ -71,27 +71,38 @@ export default function AdminOnboarding() {
     setIsVerifying(true);
     setAdminCodeError('');
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (adminCode.toLowerCase() === 'admin-secret-2024') {
-      handleNext();
-    } else if (adminCode.length === 0) {
-      setAdminCodeError('請輸入管理員驗證碼');
-    } else {
-      setAdminCodeError('驗證碼不正確，請聯繫系統管理員');
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminCode }),
+      });
+      if (res.ok) {
+        handleNext();
+      } else {
+        setAdminCodeError('驗證碼不正確，請聯繫系統管理員');
+      }
+    } catch {
+      setAdminCodeError('無法連線到伺服器');
     }
     setIsVerifying(false);
   };
 
   const handleSetup = async () => {
-    if (formData.password.length < 8) {
-      return;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      return;
-    }
+    if (formData.password.length < 8) return;
+    if (formData.password !== formData.confirmPassword) return;
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminName: formData.adminName,
+          password: formData.password,
+          role: 'admin',
+        }),
+      });
+    } catch {}
     setIsSetupComplete(true);
   };
 

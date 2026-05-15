@@ -1,70 +1,156 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Badge, Card } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { formatPrice, cn } from '@/lib/utils';
-import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, ArrowLeft } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
-const PRODUCT = {
-  id: '1',
-  name: 'Nordique 極簡羊毛大衣',
-  price: 4580,
-  originalPrice: 5980,
-  discount: 23,
-  stock: 12,
-  images: [
-    'https://picsum.photos/seed/coat-main/800/800',
-    'https://picsum.photos/seed/coat-1/800/800',
-    'https://picsum.photos/seed/coat-2/800/800',
-    'https://picsum.photos/seed/coat-3/800/800',
-    'https://picsum.photos/seed/coat-4/800/800',
-  ],
-  description:
-    '採用100%純羊毛面料，極簡線條設計，寬鬆版型適合層次穿搭。內裡採用絲滑緞面，保暖舒適不顯臃腫。經典翻領與雙排扣設計，展現北歐質感生活美學。',
-  specs: [
-    { label: '材質', value: '100% 純羊毛' },
-    { label: '版型', value: '寬鬆落肩' },
-    { label: '重量', value: '約 1.2 kg' },
-    { label: '產地', value: '義大利' },
-    { label: '洗滌', value: '建議乾洗' },
-  ],
-  sizes: ['S', 'M', 'L', 'XL'],
-  colors: [
-    { name: '焦糖棕', hex: '#C4956A' },
-    { name: '深墨黑', hex: '#2D2D2D' },
-    { name: '燕麥白', hex: '#F5F0E8' },
-  ],
-  reviews: [
-    { id: 1, user: '林小姐', rating: 5, comment: '質感超好，穿起來很挺，非常滿意！', date: '2026-05-10' },
-    { id: 2, user: '陳先生', rating: 4, comment: '版型很好看，但運送有點慢。', date: '2026-04-28' },
-    { id: 3, user: '黃小姐', rating: 5, comment: '第二次購買了，品質超讚，會繼續回購。', date: '2026-04-15' },
-    { id: 4, user: '張先生', rating: 4, comment: '顏色跟照片一樣，布料也很舒服。', date: '2026-03-30' },
-  ],
-};
-
-const SIMILAR_PRODUCTS = [
-  { id: '2', name: '羊毛混紡圍巾', price: 1280, image: 'https://picsum.photos/seed/sim-1/400/400' },
-  { id: '3', name: '針織毛帽', price: 890, image: 'https://picsum.photos/seed/sim-2/400/400' },
-  { id: '4', name: '皮革手套', price: 1580, image: 'https://picsum.photos/seed/sim-3/400/400' },
-  { id: '5', name: '羊毛長襪', price: 420, image: 'https://picsum.photos/seed/sim-4/400/400' },
-];
+interface ProductData {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  description: string;
+  images: string[];
+  specs?: { label: string; value: string }[];
+  sizes?: string[];
+  colors?: { name: string; hex: string }[];
+  reviews?: { id: number; user: string; rating: number; comment: string; date: string }[];
+  stock?: number;
+  category?: string;
+  merchantName?: string;
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
   const { showToast } = useToast();
+  const [product, setProduct] = useState<ProductData | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<{ id: string; name: string; price: number; image: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [isFavorited, setIsFavorited] = useState(false);
 
+  const productId = params?.id as string;
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch('/api/products');
+        if (!res.ok) {
+          if (res.status === 503) {
+            setError('firebase_not_configured');
+          } else {
+            setError('fetch_failed');
+          }
+          return;
+        }
+        const data = await res.json();
+        const products: ProductData[] = data.products || [];
+        const found = products.find((p: ProductData) => p.id === productId);
+        if (found) {
+          setProduct(found);
+          setSelectedSize(found.sizes?.[0] || '');
+        } else {
+          setError('not_found');
+        }
+        setSimilarProducts(
+          products
+            .filter((p: ProductData) => p.id !== productId)
+            .slice(0, 4)
+            .map((p: ProductData) => ({
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image: `https://picsum.photos/seed/${p.id}/400/400`,
+            }))
+        );
+      } catch {
+        setError('fetch_failed');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+  }, [productId]);
+
   const addToCart = () => {
-    showToast(`已加入購物車: ${PRODUCT.name} x${quantity}`, 'success');
+    if (product) {
+      showToast(`已加入購物車: ${product.name} x${quantity}`, 'success');
+    }
   };
+
+  if (loading) {
+    return (
+      <ClientLayout>
+        <div className="min-h-screen bg-gray-50 py-6">
+          <div className="mx-auto max-w-6xl px-4 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-24 mb-8" />
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="aspect-square bg-gray-200 rounded-xl" />
+              <div className="space-y-4">
+                <div className="h-8 bg-gray-200 rounded w-3/4" />
+                <div className="h-6 bg-gray-200 rounded w-1/4" />
+                <div className="h-4 bg-gray-200 rounded w-full" />
+                <div className="h-10 bg-gray-200 rounded w-1/3" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </ClientLayout>
+    );
+  }
+
+  if (error === 'firebase_not_configured') {
+    return (
+      <ClientLayout>
+        <div className="min-h-screen bg-gray-50 py-6">
+          <div className="mx-auto max-w-6xl px-4 text-center py-20">
+            <AlertTriangle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">資料庫尚未設定</h2>
+            <p className="text-gray-600 mb-6">請先完成 Firebase 設定以載入商品資料</p>
+            <Link href="/firebase-setup">
+              <Button>前往設定</Button>
+            </Link>
+          </div>
+        </div>
+      </ClientLayout>
+    );
+  }
+
+  if (error === 'not_found' || !product) {
+    return (
+      <ClientLayout>
+        <div className="min-h-screen bg-gray-50 py-6">
+          <div className="mx-auto max-w-6xl px-4 text-center py-20">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">商品不存在</h2>
+            <p className="text-gray-600 mb-6">找不到此商品</p>
+            <Link href="/search">
+              <Button>瀏覽商品</Button>
+            </Link>
+          </div>
+        </div>
+      </ClientLayout>
+    );
+  }
+
+  const images = product.images?.length ? product.images : [`https://picsum.photos/seed/${product.id}/800/800`];
+  const sizes = product.sizes || [];
+  const colors = product.colors || [];
+  const specs = product.specs || [];
+  const reviews = product.reviews || [];
+  const discount = product.originalPrice && product.originalPrice > product.price
+    ? Math.round((1 - product.price / product.originalPrice) * 100)
+    : 0;
 
   return (
     <ClientLayout>
@@ -85,13 +171,13 @@ export default function ProductDetailPage() {
             <div>
               <div className="mb-3 overflow-hidden rounded-xl bg-white">
                 <img
-                  src={PRODUCT.images[selectedImage]}
-                  alt={PRODUCT.name}
+                  src={images[selectedImage]}
+                  alt={product.name}
                   className="aspect-square w-full object-cover"
                 />
               </div>
               <div className="flex gap-2">
-                {PRODUCT.images.map((img, index) => (
+                {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -104,7 +190,7 @@ export default function ProductDetailPage() {
                   >
                     <img
                       src={img}
-                      alt={`${PRODUCT.name} ${index + 1}`}
+                      alt={`${product.name} ${index + 1}`}
                       className="h-full w-full object-cover"
                     />
                   </button>
@@ -114,27 +200,34 @@ export default function ProductDetailPage() {
 
             {/* Product Info */}
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{PRODUCT.name}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{product.name}</h1>
 
               <div className="mt-3 flex items-center gap-3">
                 <span className="text-2xl font-bold text-indigo-600">
-                  {formatPrice(PRODUCT.price)}
+                  {formatPrice(product.price)}
                 </span>
-                <span className="text-gray-400 line-through">
-                  {formatPrice(PRODUCT.originalPrice)}
-                </span>
-                <Badge className="bg-pink-400 text-white">-{PRODUCT.discount}%</Badge>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <>
+                    <span className="text-gray-400 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </span>
+                    <Badge className="bg-pink-400 text-white">-{discount}%</Badge>
+                  </>
+                )}
               </div>
 
-              <p className="mt-3 text-sm text-green-600">尚有庫存</p>
+              <p className="mt-3 text-sm text-green-600">
+                {product.stock && product.stock > 0 ? '尚有庫存' : '暫時缺貨'}
+              </p>
 
               {/* Size Selector */}
+              {sizes.length > 0 && (
               <div className="mt-6">
                 <p className="mb-2 text-sm font-medium text-gray-900">
                   尺寸：<span className="text-gray-600">{selectedSize}</span>
                 </p>
                 <div className="flex gap-2">
-                  {PRODUCT.sizes.map((size) => (
+                  {sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
@@ -150,14 +243,16 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Color Selector */}
+              {colors.length > 0 && (
               <div className="mt-4">
                 <p className="mb-2 text-sm font-medium text-gray-900">
-                  顏色：<span className="text-gray-600">{PRODUCT.colors[selectedColor].name}</span>
+                  顏色：<span className="text-gray-600">{colors[selectedColor].name}</span>
                 </p>
                 <div className="flex gap-3">
-                  {PRODUCT.colors.map((color, index) => (
+                  {colors.map((color, index) => (
                     <button
                       key={color.hex}
                       onClick={() => setSelectedColor(index)}
@@ -173,6 +268,7 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Quantity */}
               <div className="mt-6">
@@ -247,8 +343,8 @@ export default function ProductDetailPage() {
             <div className="flex border-b border-gray-200">
               {[
                 { key: 'description', label: '商品描述' },
-                { key: 'specs', label: '規格資訊' },
-                { key: 'reviews', label: '評價' },
+                ...(specs.length ? [{ key: 'specs', label: '規格資訊' }] : []),
+                ...(reviews.length ? [{ key: 'reviews', label: '評價' }] : []),
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -268,14 +364,14 @@ export default function ProductDetailPage() {
             <div className="mt-6">
               {activeTab === 'description' && (
                 <div className="rounded-xl bg-white p-6">
-                  <p className="leading-relaxed text-gray-600">{PRODUCT.description}</p>
+                  <p className="leading-relaxed text-gray-600">{product.description}</p>
                 </div>
               )}
 
               {activeTab === 'specs' && (
                 <div className="rounded-xl bg-white p-6">
                   <div className="divide-y divide-gray-100">
-                    {PRODUCT.specs.map((spec) => (
+                    {specs.map((spec) => (
                       <div key={spec.label} className="flex py-3 first:pt-0 last:pb-0">
                         <span className="w-32 text-sm text-gray-400">{spec.label}</span>
                         <span className="text-sm font-medium text-gray-900">{spec.value}</span>
@@ -287,7 +383,7 @@ export default function ProductDetailPage() {
 
               {activeTab === 'reviews' && (
                 <div className="space-y-4">
-                  {PRODUCT.reviews.map((review) => (
+                  {reviews.map((review) => (
                     <Card key={review.id} className="rounded-xl bg-white p-5">
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600">
@@ -322,23 +418,24 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Similar Products */}
+          {similarProducts.length > 0 && (
           <div className="mt-12">
             <h2 className="mb-6 text-lg font-bold text-gray-900">你可能也會喜歡</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {SIMILAR_PRODUCTS.map((product) => (
-                <Link key={product.id} href={`/client/product/${product.id}`}>
+              {similarProducts.map((sp) => (
+                <Link key={sp.id} href={`/client/product/${sp.id}`}>
                   <Card className="overflow-hidden rounded-xl bg-white transition-shadow hover:shadow-md">
                     <div className="aspect-square overflow-hidden">
                       <img
-                        src={product.image}
-                        alt={product.name}
+                        src={sp.image}
+                        alt={sp.name}
                         className="h-full w-full object-cover"
                       />
                     </div>
                     <div className="p-3">
-                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                      <p className="text-sm font-medium text-gray-900">{sp.name}</p>
                       <p className="mt-1 text-sm font-semibold text-indigo-600">
-                        {formatPrice(product.price)}
+                        {formatPrice(sp.price)}
                       </p>
                     </div>
                   </Card>
@@ -346,6 +443,7 @@ export default function ProductDetailPage() {
               ))}
             </div>
           </div>
+          )}
         </div>
 
         {/* Mobile Floating Cart Button */}

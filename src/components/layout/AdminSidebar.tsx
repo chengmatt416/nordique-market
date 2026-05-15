@@ -24,7 +24,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "儀表板" },
-  { href: "/admin/merchants", icon: Store, label: "商家管理" },
+  { href: "/admin/vendors", icon: Store, label: "供應商管理" },
   { href: "/admin/users", icon: Users, label: "用戶管理" },
   { href: "/admin/products", icon: Package, label: "商品審核" },
   { href: "/admin/orders", icon: ShoppingCart, label: "訂單管理" },

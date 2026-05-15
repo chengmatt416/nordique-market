@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { isAdminEmail } from '@/lib/admin-check';
 
 const FIREBASE_NOT_CONFIGURED = NextResponse.json(
   { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
@@ -17,15 +18,22 @@ export async function POST(request: NextRequest) {
     const db = getAdminDb();
     const decodedToken = await auth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
+    const email = decodedToken.email;
 
-    await auth.setCustomUserClaims(uid, { role: role || 'customer' });
+    const finalRole = role || 'customer';
+
+    if (finalRole === 'admin' && !isAdminEmail(email)) {
+      return NextResponse.json({ error: 'Unauthorized: admin access restricted' }, { status: 403 });
+    }
+
+    await auth.setCustomUserClaims(uid, { role: finalRole });
 
     await db.collection('users').doc(uid).set({
       uid,
       email: decodedToken.email,
       name: name || decodedToken.name || '',
       photoURL: photoURL || decodedToken.picture || '',
-      role: role || 'customer',
+      role: finalRole,
       onboardingCompleted: false,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -34,7 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       uid,
-      role: role || 'customer',
+      role: finalRole,
     });
   } catch (error) {
     console.error('Error in auth:', error);

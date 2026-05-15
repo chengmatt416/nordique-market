@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { obfuscate, obfuscatePrice } from '@/lib/crypto';
 
 const FIREBASE_NOT_CONFIGURED = NextResponse.json(
   { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
@@ -130,8 +131,17 @@ export async function GET(request: NextRequest) {
       products = products.slice(0, limit);
     }
 
+    const encrypted = products.map((p: Record<string, unknown>) => ({
+      ...p,
+      _e: true,
+      price: obfuscatePrice(Number(p.price) || 0, String(p.id)),
+      originalPrice: p.originalPrice ? obfuscatePrice(Number(p.originalPrice), String(p.id)) : undefined,
+      name: obfuscate(String(p.name || ''), String(p.id)),
+      description: obfuscate(String(p.description || ''), String(p.id)),
+    }));
+
     return NextResponse.json({
-      products,
+      products: encrypted,
       total: products.length,
       categories: Array.from(categories.entries()).map(([name, count]) => ({
         name,

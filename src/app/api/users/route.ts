@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { requireAdminAuth } from '@/lib/admin-check';
 
 const FIREBASE_NOT_CONFIGURED = NextResponse.json(
   { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
@@ -33,6 +34,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const authCheck = await requireAdminAuth(request);
+    if (authCheck instanceof NextResponse) return authCheck;
+
     if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
 
     const body = await request.json();
@@ -50,6 +54,9 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authCheck = await requireAdminAuth(request);
+    if (authCheck instanceof NextResponse) return authCheck;
+
     if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
 
     const { searchParams } = new URL(request.url);

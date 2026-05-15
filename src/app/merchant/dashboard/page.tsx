@@ -8,8 +8,6 @@ import { motion } from 'framer-motion';
 import { DollarSign, ShoppingBag, Package, Eye, TrendingUp, TrendingDown, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-const MERCHANT_ID = 'xxx';
-
 interface DashboardStats {
   todaySales: number;
   todaySalesChange: number;
@@ -63,8 +61,8 @@ export default function MerchantDashboard() {
         setError(false);
 
         const [ordersRes, productsRes] = await Promise.all([
-          fetch(`/api/orders?merchantId=${MERCHANT_ID}`),
-          fetch(`/api/products?merchantId=${MERCHANT_ID}`),
+          fetch('/api/orders'),
+          fetch('/api/products'),
         ]);
 
         if (!ordersRes.ok || !productsRes.ok) throw new Error('Failed to fetch');

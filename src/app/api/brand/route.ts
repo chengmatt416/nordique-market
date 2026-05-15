@@ -1,33 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { requireAdminAuth } from '@/lib/admin-check';
 
 export async function GET() {
-  if (!isFirebaseConfigured()) {
-    return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
-  }
   try {
+    if (!isFirebaseConfigured()) {
+      return NextResponse.json(getDefaultBrand());
+    }
     const db = getAdminDb();
     const doc = await db.collection('settings').doc('brand').get();
     return NextResponse.json(doc.exists ? doc.data() : getDefaultBrand());
-  } catch {
+  } catch (e) {
+    console.error('GET /api/brand error:', e);
     return NextResponse.json(getDefaultBrand());
   }
 }
 
 export async function PUT(request: NextRequest) {
-  if (!isFirebaseConfigured()) {
-    return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
-  }
   try {
+    const authCheck = await requireAdminAuth(request);
+    if (authCheck instanceof NextResponse) return authCheck;
+
+    if (!isFirebaseConfigured()) {
+      return NextResponse.json({ error: 'Firebase not configured' }, { status: 503 });
+    }
     const db = getAdminDb();
     const body = await request.json();
+    const clean = JSON.parse(JSON.stringify(body));
+    delete clean.updatedAt;
     await db.collection('settings').doc('brand').set({
-      ...body,
+      ...clean,
       updatedAt: new Date().toISOString(),
     }, { merge: true });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: 'Failed to save brand settings' }, { status: 500 });
+  } catch (e) {
+    console.error('PUT /api/brand error:', e);
+    return NextResponse.json({ error: 'Failed to save brand settings', detail: String(e) }, { status: 500 });
   }
 }
 

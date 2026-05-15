@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { obfuscate, obfuscatePrice } from '@/lib/crypto';
 
 const FIREBASE_NOT_CONFIGURED = NextResponse.json(
   { error: 'Firebase is not configured. Please set up Firebase Admin credentials.' },
@@ -11,12 +12,31 @@ export async function GET(request: NextRequest) {
     if (!isFirebaseConfigured()) return FIREBASE_NOT_CONFIGURED;
 
     const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
     const category = searchParams.get('category');
     const merchantId = searchParams.get('merchantId');
     const status = searchParams.get('status');
 
     const db = getAdminDb();
     let query: FirebaseFirestore.Query = db.collection('products');
+
+    if (id) {
+      const doc = await db.collection('products').doc(id).get();
+      if (!doc.exists) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      }
+      const p = { id: doc.id, ...doc.data() } as Record<string, unknown>;
+      return NextResponse.json({
+        product: {
+          ...p,
+          _e: true,
+          price: obfuscatePrice(Number(p.price) || 0, String(p.id)),
+          originalPrice: p.originalPrice ? obfuscatePrice(Number(p.originalPrice), String(p.id)) : undefined,
+          name: obfuscate(String(p.name || ''), String(p.id)),
+          description: obfuscate(String(p.description || ''), String(p.id)),
+        },
+      });
+    }
 
     if (category) {
       query = query.where('category', '==', category);
@@ -34,7 +54,16 @@ export async function GET(request: NextRequest) {
       ...doc.data(),
     }));
 
-    return NextResponse.json({ products });
+    const encrypted = products.map((p: Record<string, unknown>) => ({
+      ...p,
+      _e: true,
+      price: obfuscatePrice(Number(p.price) || 0, String(p.id)),
+      originalPrice: p.originalPrice ? obfuscatePrice(Number(p.originalPrice), String(p.id)) : undefined,
+      name: obfuscate(String(p.name || ''), String(p.id)),
+      description: obfuscate(String(p.description || ''), String(p.id)),
+    }));
+
+    return NextResponse.json({ products: encrypted });
   } catch (error) {
     console.error('Error fetching products:', error);
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
