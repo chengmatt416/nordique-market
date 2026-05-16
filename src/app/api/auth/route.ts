@@ -68,15 +68,19 @@ export async function POST(request: NextRequest) {
     if (detail.includes('Credential implementation') || detail.includes('private key') || detail.includes('ServiceAccount')) {
       return NextResponse.json({ error: 'Firebase Admin SDK credentials are invalid. Check FIREBASE_PRIVATE_KEY in .env.local' }, { status: 500 });
     }
-    if (detail.includes('Invalid Id Token') || detail.includes('token')) {
+    if (detail.includes('Invalid Id Token')) {
       const clientProject = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'unknown';
       const adminProject = process.env.FIREBASE_PROJECT_ID || 'unknown';
       return NextResponse.json({
-        error: 'Invalid authentication token — client and admin SDK projects may not match',
-        detail: `Client project: ${clientProject}, Admin project: ${adminProject}. Make sure both use the SAME Firebase project.`,
+        error: 'Invalid authentication token',
+        detail: `Client project: ${clientProject}, Admin project: ${adminProject}. Make sure both use the SAME Firebase project and the service account has Authentication enabled.`,
+        serverError: detail,
       }, { status: 401 });
     }
-    return NextResponse.json({ error: 'Authentication failed: ' + detail }, { status: 500 });
+    if (detail.includes('Token expired') || detail.includes('expired')) {
+      return NextResponse.json({ error: 'Token expired. Please sign in again.' }, { status: 401 });
+    }
+    return NextResponse.json({ error: 'Authentication failed', detail: detail }, { status: 500 });
   }
 }
 
