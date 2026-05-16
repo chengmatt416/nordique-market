@@ -4,16 +4,19 @@ import { motion } from 'framer-motion';
 import { Home, Search, ShoppingCart, FileText, User } from 'lucide-react';
 import Link from 'next/link';
 import { ClientNav } from './ClientNav';
+import { useAuth } from '@/lib/auth-context';
 
 const bottomNavItems = [
   { href: '/client/home', icon: Home, label: '首頁' },
   { href: '/search', icon: Search, label: '搜尋' },
   { href: '/client/cart', icon: ShoppingCart, label: '購物車' },
   { href: '/client/orders', icon: FileText, label: '訂單' },
-  { href: '/auth/signin', icon: User, label: '我的' },
+  { href: '/client/profile', icon: User, label: '我的' },
 ];
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <ClientNav />
