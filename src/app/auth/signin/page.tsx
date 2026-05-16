@@ -58,12 +58,8 @@ export default function SignInPage() {
       }
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : '登入失敗';
-      if (msg.includes('not configured') || msg.includes('Firebase')) {
-        showToast('Firebase 尚未設定，請先完成設定', 'error');
-        router.push('/firebase-setup');
-      } else {
-        showToast(msg, 'error');
-      }
+      console.error('[Google Sign-In Error]', msg);
+      showToast(`登入失敗: ${msg}`, 'error');
     } finally {
       setLoading(false);
     }
