@@ -51,8 +51,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, uid, role: finalRole, existing: false });
   } catch (error) {
-    console.error('POST /api/auth error:', error);
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('POST /api/auth error:', msg);
+    return NextResponse.json({ error: 'Authentication failed', detail: msg }, { status: 500 });
   }
 }
 
@@ -78,7 +79,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ uid, email: decodedToken.email, role });
   } catch (error) {
-    console.error('Error verifying token:', error);
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('GET /api/auth error:', msg);
+    return NextResponse.json({ error: 'Invalid token', detail: msg }, { status: 401 });
   }
 }
