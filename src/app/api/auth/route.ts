@@ -69,7 +69,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Firebase Admin SDK credentials are invalid. Check FIREBASE_PRIVATE_KEY in .env.local' }, { status: 500 });
     }
     if (detail.includes('Invalid Id Token') || detail.includes('token')) {
-      return NextResponse.json({ error: 'Invalid authentication token' }, { status: 401 });
+      const clientProject = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'unknown';
+      const adminProject = process.env.FIREBASE_PROJECT_ID || 'unknown';
+      return NextResponse.json({
+        error: 'Invalid authentication token — client and admin SDK projects may not match',
+        detail: `Client project: ${clientProject}, Admin project: ${adminProject}. Make sure both use the SAME Firebase project.`,
+      }, { status: 401 });
     }
     return NextResponse.json({ error: 'Authentication failed: ' + detail }, { status: 500 });
   }
