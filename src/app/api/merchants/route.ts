@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
 import { requireAdminAuth } from '@/lib/admin-check';
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const db = getAdminDb();
     const snapshot = await db.collection('merchants').orderBy('createdAt', 'desc').get();
@@ -25,7 +25,7 @@ export async function PUT(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const { id, status, rejectReason } = body;

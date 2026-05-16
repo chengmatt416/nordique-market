@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
 import { obfuscate, obfuscatePrice } from '@/lib/crypto';
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const db = getAdminDb();
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const { id, ...data } = body;
@@ -107,7 +107,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');

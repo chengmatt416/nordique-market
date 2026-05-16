@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, FieldValue, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const db = getAdminDb();
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const { id, status, trackingNumber, ...data } = body;

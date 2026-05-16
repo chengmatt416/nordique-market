@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { isFirebaseConfigured } from '@/lib/firebase/admin';
 
 export async function GET() {
   const { ok, missing } = isFirebaseConfigured();

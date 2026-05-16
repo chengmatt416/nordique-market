@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { getAdminDb, isFirebaseConfigured } from '@/lib/firebase/admin';
 import { obfuscate, obfuscatePrice } from '@/lib/crypto';
 
 function getRelevance(product: { name: string; description?: string }, query: string): number {
@@ -25,7 +25,7 @@ function getRelevance(product: { name: string; description?: string }, query: st
 
 export async function GET(request: NextRequest) {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q')?.trim() || '';

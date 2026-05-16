@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, isFirebaseConfigured, firebaseNotConfiguredResponse } from '@/lib/firebase/admin';
+import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
 import { requireAdminAuth } from '@/lib/admin-check';
 
 export async function GET() {
   try {
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const auth = getAdminAuth();
     const users: { uid: string; email: string; displayName: string; photoURL: string; customClaims: { role?: string } }[] = [];
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const body = await request.json();
     const { uid, role } = body;
@@ -52,7 +52,7 @@ export async function DELETE(request: NextRequest) {
     const authCheck = await requireAdminAuth(request);
     if (authCheck instanceof NextResponse) return authCheck;
 
-    if (!isFirebaseConfigured().ok) return firebaseNotConfiguredResponse();
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
 
     const { searchParams } = new URL(request.url);
     const uid = searchParams.get('uid');
