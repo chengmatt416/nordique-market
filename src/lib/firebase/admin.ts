@@ -43,7 +43,10 @@ function initAdminApp(): App {
     );
   }
 
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY!.replace(/\\n/g, '\n');
+  const rawKey = process.env.FIREBASE_PRIVATE_KEY!;
+  const privateKey = rawKey.includes('\n')
+    ? rawKey
+    : rawKey.replace(/\\n/g, '\n');
 
   adminApp = initializeApp({
     credential: cert({
