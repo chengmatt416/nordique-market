@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { isFirebaseConfigured } from '@/lib/firebase/admin';
+import { verifyToken } from '@/lib/auth-verify';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'pinyen.no2fa@gmail.com';
 
@@ -25,16 +26,15 @@ export async function requireAdminAuth(request: Request): Promise<NextResponse |
   }
 
   try {
-    const auth = getAdminAuth();
     const idToken = authHeader.split('Bearer ')[1];
-    const decodedToken = await auth.verifyIdToken(idToken);
-    const email = decodedToken.email;
+    const decoded = await verifyToken(idToken);
+    const email = decoded.email;
 
     if (!isAdminEmail(email)) {
       return UNAUTHORIZED;
     }
 
-    return { email: email || '' };
+    return { email };
   } catch {
     return UNAUTHORIZED;
   }
