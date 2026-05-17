@@ -122,13 +122,30 @@ export default function AdminDashboardPage() {
         products.forEach((p: { merchantId?: string }) => { if (p.merchantId) merchants.add(p.merchantId); });
         orders.forEach((o: { merchantId?: string }) => { if (o.merchantId) merchants.add(o.merchantId); });
 
+        let pendingMerchants = 0;
+        let totalUsers = 0;
+        try {
+          const [merchRes, usersRes] = await Promise.all([
+            fetch('/api/merchants'),
+            fetch('/api/users').catch(() => null),
+          ]);
+          if (merchRes.ok) {
+            const merchData = await merchRes.json();
+            pendingMerchants = (merchData.merchants || []).filter((m: any) => m.status === 'pending').length;
+          }
+          if (usersRes?.ok) {
+            const usersData = await usersRes.json();
+            totalUsers = (usersData.users || []).length;
+          }
+        } catch {}
+
         setStats([
-          { label: '總用戶', value: '0', icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-500/10', change: '-' },
+          { label: '總用戶', value: String(totalUsers), icon: Users, color: 'text-blue-500', bgColor: 'bg-blue-500/10', change: '-' },
           { label: '總商家', value: String(merchants.size), icon: Store, color: 'text-purple-500', bgColor: 'bg-purple-500/10', change: '-' },
           { label: '總商品', value: String(products.length), icon: Package, color: 'text-green-500', bgColor: 'bg-green-500/10', change: '-' },
           { label: '今日訂單', value: String(todayOrders.length), icon: ShoppingCart, color: 'text-orange-500', bgColor: 'bg-orange-500/10', change: '-' },
           { label: '今日銷售額', value: formatPrice(todaySales), icon: DollarSign, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10', change: '-' },
-          { label: '待審核', value: '0', icon: AlertTriangle, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', change: '-', warning: true },
+          { label: '待審核', value: String(pendingMerchants), icon: AlertTriangle, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', change: '-', warning: true },
         ]);
 
         setMerchantApprovals([]);

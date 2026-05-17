@@ -66,18 +66,25 @@ export default function MerchantSettings() {
       const { getFirebaseApp } = await import('@/lib/firebase/config');
       const app = getFirebaseApp();
       if (app) {
-        const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
-        const storage = getStorage(app);
-        const path = `logos/temp/${Date.now()}_${file.name}`;
-        const snapshot = await uploadBytesResumable(ref(storage, path), file);
-        const url = await getDownloadURL(snapshot.ref);
-        setLogo(url);
-        showToast('圖片上傳成功', 'success');
-      } else {
-        showToast('Firebase 儲存空間未設定', 'error');
+        try {
+          const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
+          const storage = getStorage(app);
+          const path = `logos/temp/${Date.now()}_${file.name}`;
+          const snapshot = await uploadBytesResumable(ref(storage, path), file);
+          const url = await getDownloadURL(snapshot.ref);
+          setLogo(url);
+          showToast('圖片上傳成功', 'success');
+          return;
+        } catch {
+          // Firebase Storage failed, fall through to data URL
+        }
       }
+      // Fallback: read file as data URL
+      const reader = new FileReader();
+      reader.onload = () => { setLogo(reader.result as string); showToast('圖片已載入（僅本機顯示）', 'info'); };
+      reader.readAsDataURL(file);
     } catch {
-      showToast('圖片上傳失敗', 'error');
+      showToast('無法讀取檔案', 'error');
     }
     setUploading(false);
   };
