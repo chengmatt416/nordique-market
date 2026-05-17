@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   X,
   ImagePlus,
+  Loader2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -65,6 +66,7 @@ export default function MerchantOnboarding() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -80,14 +82,36 @@ export default function MerchantOnboarding() {
     }
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { getFirebaseApp } = await import('@/lib/firebase/config');
+      const app = getFirebaseApp();
+      if (app) {
+        const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
+        const storage = getStorage(app);
+        const path = `logos/temp/${Date.now()}_${file.name}`;
+        const storageRef = ref(storage, path);
+        const snapshot = await uploadBytesResumable(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        setFormData((prev) => ({ ...prev, logo: url }));
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData((prev) => ({ ...prev, logo: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch {
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, logo: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -324,10 +348,14 @@ export default function MerchantOnboarding() {
                     ) : (
                       <label className="flex flex-col items-center cursor-pointer">
                         <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
-                          <Upload className="w-10 h-10 text-gray-400" />
+                          {uploading ? (
+                            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                          ) : (
+                            <Upload className="w-10 h-10 text-gray-400" />
+                          )}
                         </div>
                         <span className="mt-4 text-sm text-gray-900">
-                          點擊或拖曳圖片到此處上傳
+                          {uploading ? '上傳中...' : '點擊或拖曳圖片到此處上傳'}
                         </span>
                         <span className="text-xs text-gray-400 mt-1">
                           支援 JPG、PNG，最大 5MB

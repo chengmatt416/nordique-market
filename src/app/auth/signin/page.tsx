@@ -51,6 +51,18 @@ function SignInContent() {
           setLoading(false);
           return;
         }
+        if (msg.includes('sessionStorage') || msg.includes('initial state') || msg.includes('storage')) {
+          setError('瀏覽器儲存空間無法存取，請檢查隱私設定或嘗試使用無痕模式');
+          showToast('請檢查瀏覽器隱私設定，允許第三方 Cookie 後重試', 'error');
+          setLoading(false);
+          return;
+        }
+        if (msg.includes('auth/operation-not-allowed')) {
+          setError('Google 登入尚未啟用，請通知管理員');
+          showToast('Firebase 後台未啟用 Google 登入', 'error');
+          setLoading(false);
+          return;
+        }
         setError(msg);
         showToast(`登入失敗: ${msg}`, 'error');
         setLoading(false);
