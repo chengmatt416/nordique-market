@@ -209,7 +209,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               {merchantEnabled && (
-              <Link href="/auth/signin">
+              <Link href="/auth/signin?role=merchant">
                 <Button variant="outline" className="border border-white/30 text-white hover:bg-white hover:text-indigo-600">
                   開店當老闆
                 </Button>

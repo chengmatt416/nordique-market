@@ -18,6 +18,7 @@ function SignInContent() {
   const { showToast } = useToast();
   const BRAND = process.env.NEXT_PUBLIC_BRAND_NAME || 'AURA';
   const redirect = searchParams.get('redirect') || '';
+  const requestedRole = searchParams.get('role') || '';
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -74,7 +75,7 @@ function SignInContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             idToken,
-            role: '',
+            role: requestedRole,
             name: user.displayName || '',
             photoURL: user.photoURL || '',
           }),

@@ -84,7 +84,7 @@ export default function LandingPage() {
               登入
             </Link>
             {merchantEnabled && (
-            <Link href="/auth/signin">
+            <Link href="/auth/signin?role=merchant">
               <Button variant="primary" size="sm" className="rounded-lg">
                 開始銷售
               </Button>
@@ -129,7 +129,7 @@ export default function LandingPage() {
               </Button>
             </Link>
             {merchantEnabled && (
-            <Link href="/auth/signin">
+            <Link href="/auth/signin?role=merchant">
               <Button variant="outline" size="lg" className="rounded-lg">
                 商家入駐
               </Button>

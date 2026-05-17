@@ -25,15 +25,37 @@ export async function POST(request: NextRequest) {
       const existingDoc = await db.collection('users').doc(uid).get();
       if (existingDoc.exists) {
         const existing = existingDoc.data()!;
-        const correctedRole = isAdminEmail(email) ? 'admin' : (existing.role || 'customer');
+        const existingRole = existing.role || 'customer';
+        const requestedUpgrade = role === 'merchant' && existingRole === 'customer';
+        const correctedRole = isAdminEmail(email) ? 'admin' : (requestedUpgrade ? 'merchant' : existingRole);
         const updates: Record<string, unknown> = {
           name: name || existing.name || decoded.name || '',
           photoURL: photoURL || existing.photoURL || decoded.photoURL || '',
           lastLoginAt: FieldValue.serverTimestamp(),
         };
-        if (correctedRole !== existing.role) {
+        if (correctedRole !== existingRole) {
           updates.role = correctedRole;
           try { await (await import('@/lib/firebase/admin')).getAdminAuth().setCustomUserClaims(uid, { role: correctedRole }); } catch {}
+          if (correctedRole === 'merchant') {
+            try {
+              await db.collection('merchants').doc(uid).set({
+                storeName: name || decoded.name || '',
+                storeLogo: photoURL || decoded.photoURL || '',
+                description: '',
+                status: 'pending',
+                ownerName: name || decoded.name || '',
+                email,
+                phone: '',
+                address: '',
+                joinDate: new Date().toISOString().split('T')[0],
+                productsCount: 0,
+                totalSales: 0,
+                rating: 0,
+                createdAt: FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
+              });
+            } catch {}
+          }
         }
         await db.collection('users').doc(uid).update(updates);
         return NextResponse.json({ success: true, uid, role: correctedRole, existing: true });
@@ -55,6 +77,26 @@ export async function POST(request: NextRequest) {
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
+      if (finalRole === 'merchant') {
+        try {
+          await db.collection('merchants').doc(uid).set({
+            storeName: name || decoded.name || '',
+            storeLogo: photoURL || decoded.photoURL || '',
+            description: '',
+            status: 'pending',
+            ownerName: name || decoded.name || '',
+            email,
+            phone: '',
+            address: '',
+            joinDate: new Date().toISOString().split('T')[0],
+            productsCount: 0,
+            totalSales: 0,
+            rating: 0,
+            createdAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+        } catch {}
+      }
     }
 
     return NextResponse.json({ success: true, uid, role: finalRole, existing: false });
