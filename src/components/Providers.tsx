@@ -2,13 +2,16 @@
 
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider } from '@/lib/auth-context';
+import { ErrorBoundary } from './ErrorBoundary';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
