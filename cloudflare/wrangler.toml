@@ -1,0 +1,46 @@
+name = "nordique-market-api"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# ===========================================
+# D1 Database (replaces Firestore)
+# ===========================================
+[[d1_databases]]
+binding = "DB"
+database_name = "nordique-market-db"
+database_id = "your-database-id-here"
+
+# ===========================================
+# R2 Bucket (replaces Firebase Storage)
+# ===========================================
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "nordique-market-uploads"
+
+# ===========================================
+# KV Namespace (sessions, cart cache)
+# ===========================================
+[[kv_namespaces]]
+binding = "KV"
+id = "your-kv-id-here"
+
+# ===========================================
+# Environment Variables
+# ===========================================
+[vars]
+ADMIN_EMAIL = "pinyen.no2fa@gmail.com"
+BRAND_NAME = "AURA"
+JWT_SECRET = "change-this-to-a-random-secret"
+PRODUCT_ENCRYPT_KEY = "aura-secret-key-2024"
+
+# ===========================================
+# CORS: Allow your production domain
+# ===========================================
+[env.production]
+CORS_ORIGIN = "https://nordique-market.pages.dev"
+
+[env.preview]
+CORS_ORIGIN = "*"
+
+[env.development]
+CORS_ORIGIN = "http://localhost:8788"
