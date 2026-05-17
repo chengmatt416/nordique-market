@@ -6,7 +6,7 @@ import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Clock, Truck, CheckCircle, XCircle, Search, MapPin, PackageCheck, ShoppingBag } from 'lucide-react';
 
-type OrderStatus = 'pending_payment' | 'pending_ship' | 'shipped' | 'completed' | 'cancelled';
+type OrderStatus = 'pending_payment' | 'pending_ship' | 'shipped' | 'completed' | 'cancelled' | 'pending' | 'paid' | 'delivered' | 'refunded';
 
 interface OrderItem {
   id: string;
@@ -34,12 +34,16 @@ type StatusVariant = 'warning' | 'accent' | 'default' | 'success' | 'error';
 
 const statusFlow: OrderStatus[] = ['pending_payment', 'pending_ship', 'shipped', 'completed'];
 
-const statusConfig: Record<OrderStatus, { label: string; variant: StatusVariant; icon: typeof Package; step: number }> = {
+const statusConfig: Record<string, { label: string; variant: StatusVariant; icon: typeof Package; step: number }> = {
   pending_payment: { label: '待付款', variant: 'warning', icon: Clock, step: 0 },
+  pending: { label: '待付款', variant: 'warning', icon: Clock, step: 0 },
   pending_ship: { label: '待發貨', variant: 'warning', icon: Package, step: 1 },
+  paid: { label: '已付款', variant: 'accent', icon: Package, step: 1 },
   shipped: { label: '已發貨', variant: 'accent', icon: Truck, step: 2 },
+  delivered: { label: '已送達', variant: 'success', icon: PackageCheck, step: 3 },
   completed: { label: '已完成', variant: 'success', icon: PackageCheck, step: 3 },
   cancelled: { label: '已取消', variant: 'default', icon: XCircle, step: -1 },
+  refunded: { label: '已退款', variant: 'default', icon: XCircle, step: -1 },
 };
 
 const tabs = [
@@ -60,11 +64,11 @@ function OrderTimeline({ status }: { status: OrderStatus }) {
     );
   }
 
-  const currentStep = statusConfig[status].step;
+  const currentStep = (statusConfig[status] || { step: -1 }).step;
 
   const TimelineIcon = ({ s, isDone }: { s: OrderStatus; isDone: boolean }) => {
     if (isDone && s !== 'completed') return <CheckCircle className="w-4 h-4" />;
-    const Icon = statusConfig[s].icon;
+    const Icon = (statusConfig[s] || statusConfig.pending).icon;
     return <Icon className="w-4 h-4" />;
   };
 
@@ -237,7 +241,7 @@ function OrdersPage() {
             ) : (
               <div className="space-y-4">
                 {filteredOrders.map((order, idx) => {
-                  const statusInfo = statusConfig[order.status];
+                  const statusInfo = statusConfig[order.status] || { label: '未知', variant: 'default' as StatusVariant, icon: Package, step: -1 };
                   const StatusIcon = statusInfo.icon;
                   const isExpanded = expandedOrder === order.id;
 
