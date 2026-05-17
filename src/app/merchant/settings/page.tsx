@@ -147,8 +147,13 @@ export default function MerchantSettings() {
                           const snapshot = await uploadBytesResumable(ref(storage, path), file);
                           const url = await getDownloadURL(snapshot.ref);
                           setLogo(url);
+                          showToast('圖片上傳成功', 'success');
+                        } else {
+                          showToast('Firebase 儲存空間未設定', 'error');
                         }
-                      } catch {}
+                      } catch {
+                        showToast('圖片上傳失敗', 'error');
+                      }
                       setUploading(false);
                     }} />
                   </label>
