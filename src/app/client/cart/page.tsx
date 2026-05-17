@@ -1,48 +1,50 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Store } from 'lucide-react';
+import { getCart, removeFromCart, updateQuantity as updateCartQty, CartItemData } from '@/lib/cart';
 
-interface CartItem {
-  id: number;
-  name: string;
-  variant: string;
-  price: number;
-  image: number;
-  quantity: number;
-  merchant: string;
-  merchantId: number;
-}
-
-function groupByMerchant(items: CartItem[]) {
-  const map = new Map<number, { merchant: string; merchantId: number; items: CartItem[] }>();
+function groupByMerchant(items: CartItemData[]) {
+  const map = new Map<string, { merchant: string; items: CartItemData[] }>();
   for (const item of items) {
-    if (!map.has(item.merchantId)) {
-      map.set(item.merchantId, { merchant: item.merchant, merchantId: item.merchantId, items: [] });
+    const key = item.merchantId || 'default';
+    if (!map.has(key)) {
+      map.set(key, { merchant: item.merchantName || '商店', items: [] });
     }
-    map.get(item.merchantId)!.items.push(item);
+    map.get(key)!.items.push(item);
   }
   return Array.from(map.values());
 }
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [items, setItems] = useState<CartItemData[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [couponCode, setCouponCode] = useState('');
 
-  const updateQuantity = (id: number, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-      )
-    );
+  useEffect(() => {
+    setItems(getCart());
+  }, []);
+
+  const updateQuantity = (id: string, delta: number) => {
+    const updated = updateCartQty(id, delta);
+    setItems(updated);
+    setSelectedIds((prev) => {
+      const item = updated.find((i) => i.id === id);
+      if (!item || item.quantity === 0) {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      }
+      return prev;
+    });
   };
 
-  const removeItem = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const removeItem = (id: string) => {
+    const updated = removeFromCart(id);
+    setItems(updated);
     setSelectedIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
@@ -50,7 +52,7 @@ export default function CartPage() {
     });
   };
 
-  const toggleItem = (id: number) => {
+  const toggleItem = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -108,8 +110,8 @@ export default function CartPage() {
               </label>
             </div>
 
-            {merchantGroups.map((group) => (
-              <div key={group.merchantId} className="border-b border-gray-200 last:border-b-0">
+            {merchantGroups.map((group, gi) => (
+              <div key={gi} className="border-b border-gray-200 last:border-b-0">
                 <div className="flex items-center gap-2 px-4 py-3 bg-gray-50">
                   <Store className="w-4 h-4 text-gray-500" />
                   <span className="text-sm font-medium text-gray-700">{group.merchant}</span>
@@ -125,14 +127,14 @@ export default function CartPage() {
                     />
                     <div className="w-[60px] h-[60px] rounded-lg bg-gray-100 overflow-hidden shrink-0">
                       <img
-                        src={`https://picsum.photos/seed/${item.image}/120/120`}
+                        src={item.image || `https://picsum.photos/seed/${item.id}/120/120`}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{item.name}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>
+                      {item.variant && <p className="text-xs text-gray-500 mt-0.5">{item.variant}</p>}
                       <p className="text-sm font-semibold text-gray-900 mt-1">{formatPrice(item.price)}</p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

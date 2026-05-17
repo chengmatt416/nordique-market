@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Card, Badge } from '@/components/ui';
 import { ProductCardSkeleton } from '@/components/ui/Skeleton';
-import { formatPrice, cn, calculateDiscount } from '@/lib/utils';
+import { formatPrice, cn, calculateDiscount, productImageUrl } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Star, ShoppingCart, Heart, Clock, Sparkles, ShoppingBag, Zap, ArrowRight, AlertTriangle } from 'lucide-react';
 import { deobfuscateProduct } from '@/lib/crypto';
@@ -57,7 +57,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         >
           <div className="relative aspect-square overflow-hidden bg-gray-100">
             <img
-              src={`https://picsum.photos/seed/${product.id}/400/400`}
+              src={productImageUrl(product, 400)}
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />

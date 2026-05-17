@@ -55,6 +55,12 @@ export function getImageUrl(path: string | null): string {
   return `https://picsum.photos/seed/${path}/400/400`;
 }
 
+export function productImageUrl(product: { images?: string[]; image?: string; id?: string }, size = 400): string {
+  if (product.images?.length && product.images[0]) return product.images[0];
+  if (product.image) return product.image;
+  return `https://picsum.photos/seed/${product.id || 'default'}/${size}/${size}`;
+}
+
 export function calculateDiscount(original: number, current: number): number {
   if (!original || !current || isNaN(original) || isNaN(current) || original <= current) return 0;
   return Math.round(((original - current) / original) * 100);

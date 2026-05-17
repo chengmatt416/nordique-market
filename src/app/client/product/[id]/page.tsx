@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 import { ClientLayout } from '@/components/layout/ClientLayout';
 import { Button, Badge, Card } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, productImageUrl } from '@/lib/utils';
 import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { addToCart as addToCartStore } from '@/lib/cart';
 
 interface ProductData {
   id: string;
@@ -71,7 +72,7 @@ export default function ProductDetailPage() {
               id: p.id,
               name: p.name,
               price: p.price,
-              image: `https://picsum.photos/seed/${p.id}/400/400`,
+              image: productImageUrl(p, 400),
             }))
         );
       } catch {
@@ -85,6 +86,14 @@ export default function ProductDetailPage() {
 
   const addToCart = () => {
     if (product) {
+      addToCartStore({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity,
+        image: productImageUrl(product, 120),
+        variant: selectedSize ? `${selectedSize}${colors[selectedColor] ? ' / ' + colors[selectedColor].name : ''}` : colors[selectedColor]?.name,
+      });
       showToast(`已加入購物車: ${product.name} x${quantity}`, 'success');
     }
   };
@@ -143,7 +152,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images?.length ? product.images : [`https://picsum.photos/seed/${product.id}/800/800`];
+  const images = product.images?.length ? product.images : [productImageUrl(product, 800)];
   const sizes = product.sizes || [];
   const colors = product.colors || [];
   const specs = product.specs || [];

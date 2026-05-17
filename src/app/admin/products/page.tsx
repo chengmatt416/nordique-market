@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Card, Badge, Button, Modal } from '@/components/ui';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, productImageUrl } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Package, Search, Check, X, Eye } from 'lucide-react';
 import { deobfuscateProduct } from '@/lib/crypto';
@@ -230,7 +230,7 @@ export default function AdminProductsPage() {
                         >
                           <td className="py-3">
                             <img
-                              src={`https://picsum.photos/seed/${product.image}/80/80`}
+                              src={productImageUrl(product as any, 80)}
                               alt={product.name}
                               className="w-12 h-12 rounded object-cover"
                             />
@@ -324,7 +324,7 @@ export default function AdminProductsPage() {
           <div className="space-y-4">
             <div className="flex gap-4">
               <img
-                src={`https://picsum.photos/seed/${selectedProduct.image}/400/400`}
+                src={productImageUrl(selectedProduct as any, 400)}
                 alt={selectedProduct.name}
                 className="w-40 h-40 rounded object-cover"
               />

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Clock, Star, SlidersHorizontal, TrendingUp } from 'lucide-react';
 import { Button, Badge, Card, ProductCardSkeleton } from '@/components/ui';
-import { formatPrice, cn } from '@/lib/utils';
+import { formatPrice, cn, productImageUrl } from '@/lib/utils';
 import { deobfuscate, deobfuscatePrice, deobfuscateProduct } from '@/lib/crypto';
 import { BrandConfig } from '@/config/brand';
 
@@ -71,7 +71,7 @@ function ProductCardItem({ product }: { product: Product }) {
       <Card hover padding="none" className="overflow-hidden group">
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           <img
-            src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/400`}
+            src={product.images?.[0] || productImageUrl(product as any, 400)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
