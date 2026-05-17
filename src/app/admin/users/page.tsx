@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Card, Badge, Button, Modal } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, MoreVertical, Eye, Loader2, AlertTriangle } from 'lucide-react';
+import { Users, Search, MoreVertical, Eye, Loader2, AlertTriangle, Trash2, UserCog } from 'lucide-react';
 
 type TabType = 'all' | 'customer' | 'merchant';
 
@@ -42,6 +42,10 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [newRole, setNewRole] = useState('customer');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -78,6 +82,32 @@ export default function AdminUsersPage() {
     customer: users.filter((u) => (u.role || 'customer') === 'customer').length,
     merchant: users.filter((u) => u.role === 'merchant').length,
   };
+
+  async function changeRole(uid: string, role: string) {
+    setUpdating(true);
+    try {
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, role }),
+      });
+      setUsers((prev) => prev.map((u) => (u.uid === uid ? { ...u, role } : u)));
+      if (selectedUser?.uid === uid) setSelectedUser({ ...selectedUser, role });
+      setRoleModalOpen(false);
+    } catch {}
+    setUpdating(false);
+  }
+
+  async function deleteUser(uid: string) {
+    setUpdating(true);
+    try {
+      await fetch(`/api/users?uid=${uid}`, { method: 'DELETE' });
+      setUsers((prev) => prev.filter((u) => u.uid !== uid));
+      setDeleteModalOpen(false);
+      setSelectedUser(null);
+    } catch {}
+    setUpdating(false);
+  }
 
   if (loading) {
     return (
@@ -224,6 +254,18 @@ export default function AdminUsersPage() {
                                   >
                                     <Eye className="w-4 h-4" /> 查看詳情
                                   </button>
+                                  <button
+                                    onClick={() => { setSelectedUser(user); setNewRole(user.role || 'customer'); setRoleModalOpen(true); setOpenDropdownId(null); }}
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-900 hover:bg-gray-50"
+                                  >
+                                    <UserCog className="w-4 h-4" /> 變更角色
+                                  </button>
+                                  <button
+                                    onClick={() => { setSelectedUser(user); setDeleteModalOpen(true); setOpenDropdownId(null); }}
+                                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-gray-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" /> 刪除用戶
+                                  </button>
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -268,6 +310,55 @@ export default function AdminUsersPage() {
             <div className="border-t border-gray-200 pt-4">
               <p className="text-sm text-gray-600">UID</p>
               <p className="text-sm font-mono text-gray-900 break-all">{selectedUser.uid}</p>
+            </div>
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <Button variant="outline" className="flex-1" onClick={() => { setNewRole(selectedUser.role || 'customer'); setRoleModalOpen(true); }}>
+                <UserCog className="w-4 h-4 mr-1" /> 變更角色
+              </Button>
+              <Button className="flex-1 bg-red-500 hover:bg-red-600" onClick={() => { setDeleteModalOpen(true); }}>
+                <Trash2 className="w-4 h-4 mr-1" /> 刪除用戶
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal isOpen={roleModalOpen} onClose={() => setRoleModalOpen(false)} title="變更角色" size="sm">
+        {selectedUser && (
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              變更 <span className="font-medium text-gray-900">{selectedUser.displayName || selectedUser.email}</span> 的角色：
+            </p>
+            <div className="space-y-2">
+              {[
+                { value: 'customer', label: '顧客' },
+                { value: 'merchant', label: '商家' },
+                { value: 'admin', label: '管理員' },
+              ].map((opt) => (
+                <label key={opt.value} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50">
+                  <input type="radio" name="role" value={opt.value} checked={newRole === opt.value}
+                    onChange={() => setNewRole(opt.value)} className="w-4 h-4 text-indigo-600" />
+                  <span className="text-sm text-gray-900">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => setRoleModalOpen(false)}>取消</Button>
+              <Button onClick={() => changeRole(selectedUser.uid, newRole)} loading={updating}>確認</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="刪除用戶" size="sm">
+        {selectedUser && (
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              確定要刪除用戶「<span className="font-medium text-gray-900">{selectedUser.displayName || selectedUser.email}</span>」嗎？此操作無法復原。
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => setDeleteModalOpen(false)}>取消</Button>
+              <Button onClick={() => deleteUser(selectedUser.uid)} loading={updating} className="bg-red-500 hover:bg-red-600">確認刪除</Button>
             </div>
           </div>
         )}

@@ -5,7 +5,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Card, Badge, Button, Modal } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Store, Search, Check, X, Eye, Star, Loader2, AlertTriangle, MoreVertical } from 'lucide-react';
+import { Store, Search, Check, X, Eye, Star, Loader2, AlertTriangle, MoreVertical, Trash2 } from 'lucide-react';
 
 type VendorStatus = 'pending' | 'approved' | 'rejected';
 
@@ -45,6 +45,8 @@ export default function VendorPage() {
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteWithUser, setDeleteWithUser] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
@@ -104,6 +106,18 @@ export default function VendorPage() {
     setRejectModalOpen(false);
     setSelectedVendor(null);
     setRejectReason('');
+  }
+
+  async function deleteVendor() {
+    if (!selectedVendor) return;
+    setUpdating(true);
+    try {
+      await fetch(`/api/merchants?id=${selectedVendor.id}&deleteUser=${deleteWithUser}`, { method: 'DELETE' });
+      setVendors((prev) => prev.filter((v) => v.id !== selectedVendor.id));
+      setDeleteModalOpen(false);
+      setSelectedVendor(null);
+    } catch {}
+    setUpdating(false);
   }
 
   const filteredVendors = vendors.filter((v) => {
@@ -352,6 +366,11 @@ export default function VendorPage() {
                 <Button variant="outline" onClick={() => { setDetailModalOpen(false); setRejectModalOpen(true); }}>拒絕</Button>
               </div>
             )}
+            <div className="pt-4 border-t border-gray-200 flex justify-end">
+              <Button variant="ghost" onClick={() => { setDetailModalOpen(false); setDeleteModalOpen(true); }} className="text-red-500 hover:text-red-700">
+                <Trash2 className="w-4 h-4 mr-1" /> 刪除供應商
+              </Button>
+            </div>
           </div>
         )}
       </Modal>
@@ -389,6 +408,29 @@ export default function VendorPage() {
             <div className="flex gap-3 justify-end">
               <Button variant="ghost" onClick={() => { setRejectModalOpen(false); setRejectReason(''); }}>取消</Button>
               <Button onClick={() => updateVendorStatus(selectedVendor.id, 'rejected', rejectReason)} loading={updating} disabled={!rejectReason.trim()}>確認拒絕</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal isOpen={deleteModalOpen} onClose={() => { setDeleteModalOpen(false); setDeleteWithUser(false); }} title="刪除供應商" size="md">
+        {selectedVendor && (
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              確定要刪除供應商「<span className="font-medium text-gray-900">{selectedVendor.storeName}</span>」嗎？此操作無法復原。
+            </p>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={deleteWithUser}
+                onChange={(e) => setDeleteWithUser(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-500"
+              />
+              <span className="text-sm text-gray-700">同時刪除該用戶的 Firebase Auth 帳戶</span>
+            </label>
+            <div className="flex gap-3 justify-end">
+              <Button variant="ghost" onClick={() => { setDeleteModalOpen(false); setDeleteWithUser(false); }}>取消</Button>
+              <Button onClick={deleteVendor} loading={updating} className="bg-red-500 hover:bg-red-600">確認刪除</Button>
             </div>
           </div>
         )}

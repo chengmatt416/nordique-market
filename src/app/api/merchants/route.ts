@@ -42,3 +42,33 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update merchant' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authCheck = await requireAdminAuth(request);
+    if (authCheck instanceof NextResponse) return authCheck;
+
+    if (!isFirebaseConfigured().ok) return NextResponse.json({ error: "Firebase not configured" }, { status: 503 });
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const deleteUser = searchParams.get('deleteUser') === 'true';
+
+    if (!id) return NextResponse.json({ error: 'Merchant ID required' }, { status: 400 });
+
+    const db = getAdminDb();
+    await db.collection('merchants').doc(id).delete();
+    if (deleteUser) {
+      try {
+        const { getAdminAuth } = await import('@/lib/firebase/admin');
+        await getAdminAuth().deleteUser(id);
+      } catch (e) {
+        console.warn('Could not delete auth user:', e);
+      }
+    }
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting merchant:', error);
+    return NextResponse.json({ error: 'Failed to delete merchant' }, { status: 500 });
+  }
+}

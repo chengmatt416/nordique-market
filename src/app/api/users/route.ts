@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, isFirebaseConfigured } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminDb, FieldValue, isFirebaseConfigured } from '@/lib/firebase/admin';
 import { requireAdminAuth } from '@/lib/admin-check';
 
 export async function GET() {
@@ -38,7 +38,29 @@ export async function POST(request: NextRequest) {
     const { uid, role } = body;
 
     const auth = getAdminAuth();
+    const db = getAdminDb();
     await auth.setCustomUserClaims(uid, { role });
+    try {
+      await db.collection('users').doc(uid).update({ role, updatedAt: FieldValue.serverTimestamp() });
+    } catch {}
+    if (role === 'merchant') {
+      try {
+        const user = await auth.getUser(uid);
+        await db.collection('merchants').doc(uid).set({
+          storeName: user.displayName || '',
+          storeLogo: user.photoURL || '',
+          description: '',
+          status: 'approved',
+          ownerName: user.displayName || '',
+          email: user.email || '',
+          phone: '', address: '',
+          joinDate: new Date().toISOString().split('T')[0],
+          productsCount: 0, totalSales: 0, rating: 0,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+      } catch {}
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
