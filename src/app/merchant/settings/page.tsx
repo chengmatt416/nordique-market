@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MerchantLayout } from '@/components/layout/MerchantLayout';
 import { Card, Button, Input } from '@/components/ui';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,7 @@ export default function MerchantSettings() {
   const [selectedShipping, setSelectedShipping] = useState<string[]>([]);
   const [logo, setLogo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function loadSettings() {
@@ -126,14 +127,16 @@ export default function MerchantSettings() {
                   {logo && (
                     <img src={logo} alt="商店標誌" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
                   )}
-                  <label className="flex-1 border-2 border-dashed border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center gap-1 hover:border-pink-400 transition-colors cursor-pointer">
+                  <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                    className="flex-1 border-2 border-dashed border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center gap-1 hover:border-pink-400 transition-colors cursor-pointer disabled:opacity-50">
                     {uploading ? (
                       <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
                     ) : (
                       <Upload className="w-6 h-6 text-gray-400" />
                     )}
                     <p className="text-xs text-gray-500">{uploading ? '上傳中...' : '點擊上傳圖片'}</p>
-                    <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       setUploading(true);
@@ -156,7 +159,7 @@ export default function MerchantSettings() {
                       }
                       setUploading(false);
                     }} />
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>

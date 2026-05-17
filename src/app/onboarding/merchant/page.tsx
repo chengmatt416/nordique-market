@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card, Input } from '@/components/ui';
 import { BrandConfig } from '@/config/brand';
@@ -67,6 +67,7 @@ export default function MerchantOnboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -346,7 +347,8 @@ export default function MerchantOnboarding() {
                         </p>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center cursor-pointer">
+                      <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                        className="flex flex-col items-center cursor-pointer disabled:opacity-50">
                         <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
                           {uploading ? (
                             <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
@@ -360,14 +362,9 @@ export default function MerchantOnboarding() {
                         <span className="text-xs text-gray-400 mt-1">
                           支援 JPG、PNG，最大 5MB
                         </span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleLogoUpload}
-                          className="hidden"
-                        />
-                      </label>
+                      </button>
                     )}
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </Card>
                 </div>
               )}
