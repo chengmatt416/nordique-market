@@ -145,24 +145,25 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [flashSale, setFlashSale] = useState<{ active: boolean; title: string; subtitle: string; endTime: string } | null>(null);
   const [merchantEnabled, setMerchantEnabled] = useState(true);
+  const [fatalError, setFatalError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         const [prodRes, brandRes] = await Promise.all([
-          fetch('/api/products'),
-          fetch('/api/brand'),
+          fetch('/api/products').catch(() => null),
+          fetch('/api/brand').catch(() => null),
         ]);
-        if (prodRes.ok) {
+        if (prodRes?.ok) {
           const data = await prodRes.json();
           const raw = data.products || [];
           setProducts(Array.isArray(raw) ? raw.map((p: any) => p._e ? deobfuscateProduct(p) : p) : []);
-        } else if (prodRes.status === 503) {
+        } else if (prodRes?.status === 503) {
           setError('firebase_not_configured');
         } else {
           setError('fetch_failed');
         }
-        if (brandRes.ok) {
+        if (brandRes?.ok) {
           const brand = await brandRes.json();
           if (brand?.flashSale?.active) {
             setFlashSale(brand.flashSale);
@@ -171,14 +172,29 @@ export default function HomePage() {
             setMerchantEnabled(brand.merchantSignupEnabled === 'true');
           }
         }
-      } catch {
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'unknown';
         setError('fetch_failed');
+        setFatalError(msg);
       } finally {
         setLoading(false);
       }
     }
     fetchProducts();
   }, []);
+
+  if (fatalError) {
+    return (
+      <ClientLayout>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <AlertTriangle className="w-16 h-16 text-red-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">頁面載入錯誤</h2>
+          <p className="text-gray-600 mb-2">{fatalError}</p>
+          <button onClick={() => window.location.reload()} className="text-indigo-600 hover:underline text-sm">重新整理</button>
+        </div>
+      </ClientLayout>
+    );
+  }
 
   const featuredProducts = products.slice(0, 4);
   const recommendedProducts = products.slice(4, 8);
