@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number): string {
+  if (typeof price !== 'number' || isNaN(price)) return 'NT$0';
   return new Intl.NumberFormat('zh-TW', {
     style: 'currency',
     currency: 'TWD',
@@ -55,6 +56,7 @@ export function getImageUrl(path: string | null): string {
 }
 
 export function calculateDiscount(original: number, current: number): number {
+  if (!original || !current || isNaN(original) || isNaN(current) || original <= current) return 0;
   return Math.round(((original - current) / original) * 100);
 }
 

@@ -1,4 +1,4 @@
-const KEY = process.env.PRODUCT_ENCRYPT_KEY || 'aura-secret-key-2024';
+const KEY = 'aura-secret-key-2024';
 const KEY_NUMS = KEY.split('').map(c => c.charCodeAt(0));
 
 function mixSeed(productId: string): number[] {
