@@ -6,6 +6,7 @@ import { Card, Badge, Button, Modal, Input } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Package, Eye, Truck, Search, User, MapPin, CreditCard, AlertTriangle } from 'lucide-react';
+import { deobfuscate, deobfuscatePrice } from '@/lib/crypto';
 
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
 
@@ -83,7 +84,13 @@ export default function MerchantOrdersPage() {
         customerName: o.customerName || o.customer || '',
         customerEmail: o.customerEmail || '',
         customerPhone: o.customerPhone || '',
-        items: o.items || [],
+        items: (o.items || []).map((item: any) => item._e ? {
+          id: item.productId || item.id || '',
+          name: deobfuscate(item.name || '', item.productId || ''),
+          image: item.productImage || '',
+          price: deobfuscatePrice(item.price || '0', item.productId || ''),
+          quantity: item.quantity || 1,
+        } : { id: item.productId || item.id || '', name: item.name || '', image: item.productImage || '', price: item.price || 0, quantity: item.quantity || 1 }),
         total: o.total || 0,
         status: o.status || 'pending',
         date: o.date || o.createdAt || '',
