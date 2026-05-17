@@ -347,28 +347,32 @@ export default function MerchantOnboarding() {
                         </p>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
-                        onDragOver={(e) => e.preventDefault()}
+                      <div
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                         onDrop={async (e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           const file = e.dataTransfer.files?.[0];
                           if (file) handleLogoUpload({ target: { files: [file] } } as any);
                         }}
-                        className="flex flex-col items-center cursor-pointer disabled:opacity-50">
-                        <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
-                          {uploading ? (
-                            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-                          ) : (
-                            <Upload className="w-10 h-10 text-gray-400" />
-                          )}
-                        </div>
+                        className="flex flex-col items-center">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                          className="cursor-pointer disabled:opacity-50">
+                          <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
+                            {uploading ? (
+                              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                            ) : (
+                              <Upload className="w-10 h-10 text-gray-400" />
+                            )}
+                          </div>
+                        </button>
                         <span className="mt-4 text-sm text-gray-900">
                           {uploading ? '上傳中...' : '點擊或拖曳圖片到此處上傳'}
                         </span>
                         <span className="text-xs text-gray-400 mt-1">
                           支援 JPG、PNG，最大 5MB
                         </span>
-                      </button>
+                      </div>
                     )}
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </Card>

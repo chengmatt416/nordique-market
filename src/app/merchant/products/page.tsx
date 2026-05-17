@@ -22,8 +22,6 @@ interface Product {
   image: string;
 }
 
-const categories = ['時鐘', '家具', '地毯', '裝飾品', '燈具', '收納', '五金配件'];
-
 const statusLabels: Record<ProductStatus, string> = {
   active: '上架中',
   inactive: '下架中',
@@ -53,11 +51,12 @@ export default function MerchantProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: categories[0],
+    category: '',
     price: '',
     originalPrice: '',
     stock: '',
@@ -66,6 +65,13 @@ export default function MerchantProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetch('/api/brand').then(r => r.json()).then(data => {
+      if (Array.isArray(data.categories)) {
+        const names = data.categories.map((c: any) => c.name);
+        setCategoryOptions(names);
+        setFormData(prev => ({ ...prev, category: names[0] || '' }));
+      }
+    }).catch(() => {});
   }, []);
 
   async function fetchProducts() {
@@ -113,7 +119,7 @@ export default function MerchantProductsPage() {
     setFormData({
       name: '',
       description: '',
-      category: categories[0],
+      category: categoryOptions[0] || '',
       price: '',
       originalPrice: '',
       stock: '',
@@ -441,9 +447,13 @@ export default function MerchantProductsPage() {
                     'focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20'
                   )}
                 >
-                  {categories.map((cat) => (
+                  {categoryOptions.length === 0 ? (
+                    <option value="">無分類</option>
+                  ) : (
+                    categoryOptions.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
-                  ))}
+                    ))
+                  )}
                 </select>
               </div>
               <Input
