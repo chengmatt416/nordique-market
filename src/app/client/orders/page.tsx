@@ -5,6 +5,7 @@ import { Button, Card, Badge } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Clock, Truck, CheckCircle, XCircle, Search, MapPin, PackageCheck, ShoppingBag } from 'lucide-react';
+import { deobfuscate, deobfuscatePrice } from '@/lib/crypto';
 
 type OrderStatus = 'pending_payment' | 'pending_ship' | 'shipped' | 'completed' | 'cancelled' | 'pending' | 'paid' | 'delivered' | 'refunded';
 
@@ -116,7 +117,14 @@ function OrdersPage() {
       const res = await fetch('/api/orders');
       if (!res.ok) throw new Error('Failed to fetch orders');
       const data = await res.json();
-      setOrders(Array.isArray(data.orders) ? data.orders : []);
+      setOrders(Array.isArray(data.orders) ? data.orders.map((o: any) => ({
+        ...o,
+        items: (o.items || []).map((item: any) => item._e ? {
+          ...item,
+          name: deobfuscate(item.name || '', item.productId || ''),
+          price: deobfuscatePrice(item.price || '0', item.productId || ''),
+        } : item),
+      })) : []);
     } catch {
       setError('無法載入訂單');
     } finally {

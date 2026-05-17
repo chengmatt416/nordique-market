@@ -5,6 +5,7 @@ import { Card, Badge, Button, Modal } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Search, Eye, AlertTriangle, Loader2 } from 'lucide-react';
+import { deobfuscate, deobfuscatePrice } from '@/lib/crypto';
 
 type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'completed' | 'cancelled';
 
@@ -59,7 +60,11 @@ export default function AdminOrdersPage() {
           id: o.id,
           customerName: o.customerName || o.customer || '',
           merchantName: o.merchantName || '',
-          items: o.items || [],
+          items: (o.items || []).map((item: any) => item._e ? {
+            name: deobfuscate(item.name || '', item.productId || ''),
+            quantity: item.quantity || 1,
+            price: deobfuscatePrice(item.price || '0', item.productId || ''),
+          } : { name: item.name || '', quantity: item.quantity || 1, price: item.price || 0 }),
           total: o.total || 0,
           status: o.status || 'pending_payment',
           date: o.date || o.createdAt || '',
