@@ -8,6 +8,7 @@ import { Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, ArrowLeft, Alert
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { addToCart as addToCartStore } from '@/lib/cart';
+import { deobfuscateProduct } from '@/lib/crypto';
 
 interface ProductData {
   id: string;
@@ -59,8 +60,9 @@ export default function ProductDetailPage() {
         const products: ProductData[] = data.products || [];
         const found = products.find((p: ProductData) => p.id === productId);
         if (found) {
-          setProduct(found);
-          setSelectedSize(found.sizes?.[0] || '');
+          const decrypted = (found as any)._e ? deobfuscateProduct(found) : found;
+          setProduct(decrypted);
+          setSelectedSize(decrypted.sizes?.[0] || '');
         } else {
           setError('not_found');
         }
@@ -68,12 +70,15 @@ export default function ProductDetailPage() {
           products
             .filter((p: ProductData) => p.id !== productId)
             .slice(0, 4)
-            .map((p: ProductData) => ({
-              id: p.id,
-              name: p.name,
-              price: p.price,
-              image: productImageUrl(p, 400),
-            }))
+            .map((p: ProductData) => {
+              const decrypted = (p as any)._e ? deobfuscateProduct(p) : p;
+              return {
+                id: decrypted.id,
+                name: decrypted.name,
+                price: decrypted.price,
+                image: productImageUrl(decrypted, 400),
+              };
+            })
         );
       } catch {
         setError('fetch_failed');
