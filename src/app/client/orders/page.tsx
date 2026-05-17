@@ -109,10 +109,10 @@ function OrdersPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/orders?customerId=current');
+      const res = await fetch('/api/orders');
       if (!res.ok) throw new Error('Failed to fetch orders');
       const data = await res.json();
-      setOrders(data.orders || data);
+      setOrders(Array.isArray(data.orders) ? data.orders : []);
     } catch {
       setError('無法載入訂單');
     } finally {
