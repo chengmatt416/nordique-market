@@ -1,11 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ClientLayout } from '@/components/layout/ClientLayout';
-import { Button, Card, Badge } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { formatPrice, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Check, CreditCard, Building, Store, MapPin, Plus, ChevronRight, ShoppingBag } from 'lucide-react';
+import { getCart, clearCart, CartItemData } from '@/lib/cart';
 
 const STEPS = [
   { label: '選擇商品', key: 1 },
@@ -19,59 +21,21 @@ const PAYMENT_METHODS = [
   { id: 'convenience', label: '超商繳費', icon: Store },
 ];
 
-interface CheckoutItem {
-  id: string;
-  name: string;
-  variant: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
-interface AddressItem {
-  id: string;
-  name: string;
-  phone: string;
-  address: string;
-}
-
 export default function CheckoutPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
-  const [items, setItems] = useState<CheckoutItem[]>([]);
-  const [addresses, setAddresses] = useState<AddressItem[]>([]);
+  const [items, setItems] = useState<CartItemData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAddress, setSelectedAddress] = useState('');
   const [selectedPayment, setSelectedPayment] = useState('credit');
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [cartRes, addrRes] = await Promise.all([
-          fetch('/api/orders?customerId=current'),
-          fetch('/api/users'),
-        ]);
-        if (cartRes.ok) {
-          const data = await cartRes.json();
-          if (data.orders?.length) {
-            const lastOrder = data.orders[0];
-            setItems(
-              (lastOrder.items || []).map((i: any) => ({
-                id: i.productId || i.id,
-                name: i.productName || '',
-                variant: i.variantName || '',
-                price: i.price || 0,
-                quantity: i.quantity || 1,
-                image: i.productImage || '',
-              }))
-            );
-          }
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
+    const cart = getCart().filter(i => i.quantity > 0);
+    if (cart.length === 0) {
+      setLoading(false);
+      return;
     }
-    load();
+    setItems(cart);
+    setLoading(false);
   }, []);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -188,51 +152,26 @@ export default function CheckoutPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Address Selection */}
+              {/* Shipping Address */}
               <Card className="mb-6 rounded-xl bg-white p-6">
                 <h2 className="mb-4 text-lg font-bold text-gray-900">運送地址</h2>
                 <div className="space-y-3">
-                  {addresses.length === 0 ? (
-                    <p className="text-sm text-gray-400 text-center py-4">請先新增運送地址</p>
-                  ) : (
-                    addresses.map((addr) => (
-                    <label
-                      key={addr.id}
-                      className={cn(
-                        'flex cursor-pointer items-start gap-3 rounded-xl border-2 p-4 transition-colors',
-                        selectedAddress === addr.id
-                          ? 'border-indigo-600 bg-indigo-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="address"
-                        value={addr.id}
-                        checked={selectedAddress === addr.id}
-                        onChange={() => setSelectedAddress(addr.id)}
-                        className="mt-0.5 h-4 w-4 accent-indigo-600"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{addr.name}</span>
-                          <span className="text-sm text-gray-400">{addr.phone}</span>
-                        </div>
-                        <div className="mt-1 flex items-start gap-1 text-sm text-gray-600">
-                          <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-                          {addr.address}
-                        </div>
-                      </div>
-                    </label>
-                  )))}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">收件人姓名</label>
+                    <input type="text" placeholder="請輸入姓名"
+                      className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">聯絡電話</label>
+                    <input type="tel" placeholder="0912-345-678"
+                      className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">配送地址</label>
+                    <input type="text" placeholder="請輸入完整地址"
+                      className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" />
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  className="mt-3 flex items-center gap-1 text-sm text-indigo-600"
-                >
-                  <Plus className="h-4 w-4" />
-                  新增地址
-                </Button>
               </Card>
 
               {/* Payment Method */}
@@ -298,14 +237,14 @@ export default function CheckoutPage() {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        items,
+                        items: items.map(i => ({ productId: i.id, productName: i.name, price: i.price, quantity: i.quantity, productImage: i.image })),
                         totalAmount: total,
                         shippingFee: shipping,
                         paymentMethod: selectedPayment,
-                        shippingAddress: addresses.find(a => a.id === selectedAddress),
                       }),
                     });
                   } catch {}
+                  clearCart();
                   setStep(3);
                 }}
                 className="w-full rounded-xl bg-indigo-600 py-3 font-medium text-white hover:bg-indigo-700"
