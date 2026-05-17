@@ -6,6 +6,7 @@ import { formatPrice, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Package, Search, Check, X, Eye } from 'lucide-react';
 import { deobfuscateProduct } from '@/lib/crypto';
+import { useAuth } from '@/lib/auth-context';
 
 type ProductStatus = 'pending' | 'approved' | 'rejected';
 
@@ -31,6 +32,7 @@ const tabs = [
 ];
 
 export default function AdminProductsPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -40,6 +42,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -87,26 +90,49 @@ export default function AdminProductsPage() {
     setShowPreviewModal(true);
   };
 
-  const handleApprove = (productId: string) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, status: 'approved' } : p))
-    );
-    setShowPreviewModal(false);
+  const handleApprove = async (productId: string) => {
+    setUpdating(true);
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (user) headers['Authorization'] = 'Bearer ' + (await user.getIdToken());
+      await fetch('/api/products', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ id: productId, status: 'approved' }),
+      });
+      setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, status: 'approved' } : p)));
+      setShowPreviewModal(false);
+    } catch {}
+    setUpdating(false);
   };
 
-  const handleReject = (productId: string) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === productId ? { ...p, status: 'rejected' } : p
-      )
-    );
-    setShowRejectModal(false);
-    setShowPreviewModal(false);
-    setRejectReason('');
+  const handleReject = async (productId: string) => {
+    setUpdating(true);
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (user) headers['Authorization'] = 'Bearer ' + (await user.getIdToken());
+      await fetch('/api/products', {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ id: productId, status: 'rejected' }),
+      });
+      setProducts((prev) => prev.map((p) => (p.id === productId ? { ...p, status: 'rejected' } : p)));
+      setShowRejectModal(false);
+      setShowPreviewModal(false);
+      setRejectReason('');
+    } catch {}
+    setUpdating(false);
   };
 
-  const handleDelete = (productId: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
+  const handleDelete = async (productId: string) => {
+    setUpdating(true);
+    try {
+      const headers: Record<string, string> = {};
+      if (user) headers['Authorization'] = 'Bearer ' + (await user.getIdToken());
+      await fetch(`/api/products?id=${productId}`, { method: 'DELETE', headers });
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+    } catch {}
+    setUpdating(false);
   };
 
   const getStatusBadge = (status: ProductStatus) => {
