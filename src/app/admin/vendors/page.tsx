@@ -6,6 +6,7 @@ import { Card, Badge, Button, Modal } from '@/components/ui';
 import { formatPrice, formatDate, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, Search, Check, X, Eye, Star, Loader2, AlertTriangle, MoreVertical, Trash2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 type VendorStatus = 'pending' | 'approved' | 'rejected';
 
@@ -35,6 +36,7 @@ const tabs: { key: TabType; label: string }[] = [
 ];
 
 export default function VendorPage() {
+  const { user } = useAuth();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,15 @@ export default function VendorPage() {
   useEffect(() => {
     fetchVendors();
   }, []);
+
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (user) {
+      const token = await user.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
 
   async function fetchVendors() {
     try {
@@ -94,7 +105,7 @@ export default function VendorPage() {
     try {
       await fetch('/api/merchants', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ id, status, rejectReason: reason }),
       });
       setVendors((prev) =>
@@ -112,7 +123,12 @@ export default function VendorPage() {
     if (!selectedVendor) return;
     setUpdating(true);
     try {
-      await fetch(`/api/merchants?id=${selectedVendor.id}&deleteUser=${deleteWithUser}`, { method: 'DELETE' });
+      const headers = await getAuthHeaders();
+      delete headers['Content-Type'];
+      await fetch(`/api/merchants?id=${selectedVendor.id}&deleteUser=${deleteWithUser}`, {
+        method: 'DELETE',
+        headers,
+      });
       setVendors((prev) => prev.filter((v) => v.id !== selectedVendor.id));
       setDeleteModalOpen(false);
       setSelectedVendor(null);

@@ -6,6 +6,7 @@ import { Button, Card, Input } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 import { motion } from 'framer-motion';
 import { Save, RefreshCw, Plus, Trash2, Clock } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface BrandSettings {
   name: string;
@@ -72,6 +73,7 @@ function safeParseJSON<T>(json: string, fallback: T): T {
 }
 
 export default function BrandManagerPage() {
+  const { user } = useAuth();
   const [settings, setSettings] = useState<BrandSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -120,12 +122,14 @@ export default function BrandManagerPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (user) headers['Authorization'] = 'Bearer ' + (await user.getIdToken());
       const payload = { ...settings, flashSale: JSON.stringify(flashSale) };
       delete (payload as any).features;
       delete (payload as any).categories;
       const res = await fetch('/api/brand', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       });
       if (res.ok) {

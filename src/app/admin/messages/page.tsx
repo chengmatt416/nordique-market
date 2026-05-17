@@ -6,6 +6,7 @@ import { Card, Badge, Button, Modal } from '@/components/ui';
 import { formatDate, cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { MessageSquare, Search, Eye, Mail, User, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface Message {
   id: string;
@@ -18,6 +19,7 @@ interface Message {
 }
 
 export default function AdminMessagesPage() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +32,21 @@ export default function AdminMessagesPage() {
     fetchMessages();
   }, []);
 
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (user) {
+      const token = await user.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
+
   async function fetchMessages() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/contact');
+      const headers = await getAuthHeaders();
+      const res = await fetch('/api/contact', { headers });
       if (!res.ok) {
         if (res.status === 503) { setError('firebase_not_configured'); return; }
         throw new Error('無法載入');
@@ -53,7 +65,7 @@ export default function AdminMessagesPage() {
     try {
       await fetch('/api/contact', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ id, status: 'read' }),
       });
       setMessages(prev => prev.map(m => m.id === id ? { ...m, status: 'read' } : m));

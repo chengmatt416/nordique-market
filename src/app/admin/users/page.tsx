@@ -6,6 +6,7 @@ import { Card, Badge, Button, Modal } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Search, MoreVertical, Eye, Loader2, AlertTriangle, Trash2, UserCog } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 type TabType = 'all' | 'customer' | 'merchant';
 
@@ -34,6 +35,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function AdminUsersPage() {
+  const { user } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +52,15 @@ export default function AdminUsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  async function getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (user) {
+      const token = await user.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }
 
   async function fetchUsers() {
     try {
@@ -88,7 +99,7 @@ export default function AdminUsersPage() {
     try {
       await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ uid, role }),
       });
       setUsers((prev) => prev.map((u) => (u.uid === uid ? { ...u, role } : u)));
@@ -101,7 +112,9 @@ export default function AdminUsersPage() {
   async function deleteUser(uid: string) {
     setUpdating(true);
     try {
-      await fetch(`/api/users?uid=${uid}`, { method: 'DELETE' });
+      const headers = await getAuthHeaders();
+      delete headers['Content-Type'];
+      await fetch(`/api/users?uid=${uid}`, { method: 'DELETE', headers });
       setUsers((prev) => prev.filter((u) => u.uid !== uid));
       setDeleteModalOpen(false);
       setSelectedUser(null);
