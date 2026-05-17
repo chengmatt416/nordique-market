@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
+const brandName = process.env.NEXT_PUBLIC_BRAND_NAME || 'AURA';
+
 export function ClientNav() {
   const { user, role, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,7 +38,7 @@ export function ClientNav() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <Link href="/client/home" className="text-lg font-bold text-gray-900 tracking-tight">
-            AURA
+            {brandName || '商店'}
           </Link>
 
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-6">
