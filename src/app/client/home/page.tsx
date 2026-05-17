@@ -82,10 +82,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-1">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                <span className="text-xs text-gray-500">{product.rating.toFixed(1)}</span>
-                <span className="text-xs text-gray-400">({product.reviewCount})</span>
+                <span className="text-xs text-gray-500">{(product.rating || 0).toFixed(1)}</span>
+                <span className="text-xs text-gray-400">({product.reviewCount || 0})</span>
               </div>
-              <span className="text-xs text-gray-400">已售 {product.sold}</span>
+              <span className="text-xs text-gray-400">已售 {product.sold || 0}</span>
             </div>
           </div>
         </Card>
