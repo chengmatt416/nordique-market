@@ -162,7 +162,6 @@ export default function MerchantSettings() {
                   </div>
                 </div>
               </div>
-            </div>
           </Card>
 
           <Card padding="none">
