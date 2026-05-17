@@ -15,20 +15,34 @@ export function formatPrice(price: number): string {
   }).format(price);
 }
 
-export function formatDate(date: Date | string | undefined | null): string {
+export function formatDate(date: Date | string | { _seconds?: number } | undefined | null): string {
   if (!date) return '-';
-  const d = typeof date === 'string' ? new Date(date) : date;
+  let d: Date;
+  if (typeof date === 'string') {
+    d = new Date(date);
+  } else if (date instanceof Date) {
+    d = date;
+  } else if (typeof date === 'object' && '_seconds' in date && typeof (date as any)._seconds === 'number') {
+    d = new Date((date as any)._seconds * 1000);
+  } else {
+    d = new Date(date as any);
+  }
   if (isNaN(d.getTime())) return '-';
-  return new Intl.DateTimeFormat('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(d);
+  return new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
 }
 
-export function formatRelativeTime(date: Date | string | undefined | null): string {
+export function formatRelativeTime(date: Date | string | { _seconds?: number } | undefined | null): string {
   if (!date) return '-';
-  const d = typeof date === 'string' ? new Date(date) : date;
+  let d: Date;
+  if (typeof date === 'string') {
+    d = new Date(date);
+  } else if (date instanceof Date) {
+    d = date;
+  } else if (typeof date === 'object' && '_seconds' in date && typeof (date as any)._seconds === 'number') {
+    d = new Date((date as any)._seconds * 1000);
+  } else {
+    d = new Date(date as any);
+  }
   if (isNaN(d.getTime())) return '-';
   const now = new Date();
   const diff = now.getTime() - d.getTime();
