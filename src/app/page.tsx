@@ -12,6 +12,8 @@ import {
   Search,
   Heart,
   TrendingUp,
+  Zap,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -36,24 +38,31 @@ const features = [
   { icon: CreditCard, title: '便捷付款', desc: '多種支付方式' },
 ];
 
-const categories = [
-  { name: '時尚', icon: ShoppingBag },
-  { name: '電子產品', icon: Search },
-  { name: '家居', icon: Heart },
-  { name: '美妝', icon: Heart },
-  { name: '運動', icon: TrendingUp },
-  { name: '食品', icon: ShoppingBag },
-];
-
 export default function LandingPage() {
   const [merchantEnabled, setMerchantEnabled] = useState(true);
+  const [categories, setCategories] = useState<{ name: string; icon: string }[]>([]);
+  const iconMap: Record<string, React.ReactNode> = {
+    ShoppingBag: <ShoppingBag className="w-4 h-4" />,
+    Search: <Search className="w-4 h-4" />,
+    Heart: <Heart className="w-4 h-4" />,
+    TrendingUp: <TrendingUp className="w-4 h-4" />,
+    Zap: <Zap className="w-4 h-4" />,
+    Sparkles: <Sparkles className="w-4 h-4" />,
+    Dumbbell: <ShoppingBag className="w-4 h-4" />,
+    Apple: <ShoppingBag className="w-4 h-4" />,
+  };
 
   useEffect(() => {
     fetch('/api/brand')
       .then(r => r.json())
       .then(data => {
-        if (data && !data.error && data.merchantSignupEnabled !== undefined) {
-          setMerchantEnabled(data.merchantSignupEnabled === 'true');
+        if (data && !data.error) {
+          if (data.merchantSignupEnabled !== undefined) {
+            setMerchantEnabled(data.merchantSignupEnabled === 'true');
+          }
+          if (Array.isArray(data.categories)) {
+            setCategories(data.categories);
+          }
         }
       })
       .catch(() => {});
@@ -183,7 +192,7 @@ export default function LandingPage() {
                 href={`/search?category=${encodeURIComponent(cat.name)}`}
               >
                 <div className="aspect-square bg-white rounded-xl p-4 flex flex-col items-center justify-center gap-2 border border-gray-200 hover:border-pink-300 hover:shadow-sm transition-all cursor-pointer">
-                  <cat.icon className="w-6 h-6 text-gray-500" />
+                  {iconMap[cat.icon] || <ShoppingBag className="w-6 h-6 text-gray-500" />}
                   <span className="text-xs font-medium text-gray-700">
                     {cat.name}
                   </span>

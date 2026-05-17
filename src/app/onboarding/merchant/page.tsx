@@ -348,6 +348,12 @@ export default function MerchantOnboarding() {
                       </div>
                     ) : (
                       <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) handleLogoUpload({ target: { files: [file] } } as any);
+                        }}
                         className="flex flex-col items-center cursor-pointer disabled:opacity-50">
                         <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-200 flex items-center justify-center hover:border-indigo-600 transition-colors">
                           {uploading ? (

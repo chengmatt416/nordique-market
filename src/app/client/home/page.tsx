@@ -21,22 +21,6 @@ interface Product {
   sold: number;
 }
 
-const categories = [
-  { name: '時尚', icon: 'ShoppingBag' },
-  { name: '電子', icon: 'Zap' },
-  { name: '家居', icon: 'Heart' },
-  { name: '美妝', icon: 'Sparkles' },
-  { name: '運動', icon: 'ShoppingBag' },
-  { name: '食品', icon: 'ShoppingBag' },
-] as const;
-
-const iconMap: Record<string, React.ReactNode> = {
-  ShoppingBag: <ShoppingBag className="w-6 h-6" />,
-  Zap: <Zap className="w-6 h-6" />,
-  Heart: <Heart className="w-6 h-6" />,
-  Sparkles: <Sparkles className="w-6 h-6" />,
-};
-
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const [isHovered, setIsHovered] = useState(false);
   const discount = calculateDiscount(product.originalPrice, product.price);
@@ -145,6 +129,15 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [flashSale, setFlashSale] = useState<{ active: boolean; title: string; subtitle: string; endTime: string } | null>(null);
   const [merchantEnabled, setMerchantEnabled] = useState(true);
+  const [categories, setCategories] = useState<{ name: string; icon: string }[]>([]);
+  const iconMap: Record<string, React.ReactNode> = {
+    ShoppingBag: <ShoppingBag className="w-6 h-6" />,
+    Zap: <Zap className="w-6 h-6" />,
+    Heart: <Heart className="w-6 h-6" />,
+    Sparkles: <Sparkles className="w-6 h-6" />,
+    Dumbbell: <ShoppingBag className="w-6 h-6" />,
+    Apple: <ShoppingBag className="w-6 h-6" />,
+  };
   const [fatalError, setFatalError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -170,6 +163,9 @@ export default function HomePage() {
           }
           if (brand.merchantSignupEnabled !== undefined) {
             setMerchantEnabled(brand.merchantSignupEnabled === 'true');
+          }
+          if (Array.isArray(brand.categories)) {
+            setCategories(brand.categories);
           }
         }
       } catch (e) {

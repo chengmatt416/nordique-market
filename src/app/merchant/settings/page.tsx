@@ -60,8 +60,29 @@ export default function MerchantSettings() {
     );
   };
 
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const { getFirebaseApp } = await import('@/lib/firebase/config');
+      const app = getFirebaseApp();
+      if (app) {
+        const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
+        const storage = getStorage(app);
+        const path = `logos/temp/${Date.now()}_${file.name}`;
+        const snapshot = await uploadBytesResumable(ref(storage, path), file);
+        const url = await getDownloadURL(snapshot.ref);
+        setLogo(url);
+        showToast('圖片上傳成功', 'success');
+      } else {
+        showToast('Firebase 儲存空間未設定', 'error');
+      }
+    } catch {
+      showToast('圖片上傳失敗', 'error');
+    }
+    setUploading(false);
+  };
+
   const handleSave = async () => {
-    setSaving(true);
     try {
       await fetch('/api/brand', {
         method: 'PUT',
@@ -128,6 +149,13 @@ export default function MerchantSettings() {
                     <img src={logo} alt="商店標誌" className="w-16 h-16 rounded-full object-cover border border-gray-200" />
                   )}
                   <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading}
+                    onDragOver={(e) => { e.preventDefault(); }}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files?.[0];
+                      if (!file) return;
+                      await handleUpload(file);
+                    }}
                     className="flex-1 border-2 border-dashed border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center gap-1 hover:border-pink-400 transition-colors cursor-pointer disabled:opacity-50">
                     {uploading ? (
                       <Loader2 className="w-6 h-6 text-pink-400 animate-spin" />
@@ -136,29 +164,10 @@ export default function MerchantSettings() {
                     )}
                     <p className="text-xs text-gray-500">{uploading ? '上傳中...' : '點擊上傳圖片'}</p>
                   </button>
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploading(true);
-                      try {
-                        const { getFirebaseApp } = await import('@/lib/firebase/config');
-                        const app = getFirebaseApp();
-                        if (app) {
-                          const { getStorage, ref, uploadBytesResumable, getDownloadURL } = await import('firebase/storage');
-                          const storage = getStorage(app);
-                          const path = `logos/temp/${Date.now()}_${file.name}`;
-                          const snapshot = await uploadBytesResumable(ref(storage, path), file);
-                          const url = await getDownloadURL(snapshot.ref);
-                          setLogo(url);
-                          showToast('圖片上傳成功', 'success');
-                        } else {
-                          showToast('Firebase 儲存空間未設定', 'error');
-                        }
-                      } catch {
-                        showToast('圖片上傳失敗', 'error');
-                      }
-                      setUploading(false);
-                    }} />
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleUpload(file);
+                  }} />
                   </div>
                 </div>
               </div>

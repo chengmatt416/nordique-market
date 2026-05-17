@@ -28,6 +28,7 @@ interface BrandSettings {
   contactExtraInfo: string;
   flashSale: string;
   merchantSignupEnabled: string;
+  categories: string;
 }
 
 interface FAQItem {
@@ -60,6 +61,7 @@ const defaultSettings: BrandSettings = {
   contactExtraInfo: '',
   flashSale: '{"active":false,"title":"","subtitle":"","endTime":""}',
   merchantSignupEnabled: 'true',
+  categories: '[]',
 };
 
 function safeParseJSON<T>(json: string, fallback: T): T {
@@ -83,6 +85,7 @@ export default function BrandManagerPage() {
   const [privacySections, setPrivacySections] = useState<ContentSection[]>([]);
   const [termsSections, setTermsSections] = useState<ContentSection[]>([]);
   const [flashSale, setFlashSale] = useState({ active: false, title: '', subtitle: '', endTime: '' });
+  const [categories, setCategories] = useState<{ name: string; icon: string }[]>([]);
 
   useEffect(() => {
     fetch('/api/brand')
@@ -94,11 +97,15 @@ export default function BrandManagerPage() {
           setFaqItems(safeParseJSON<FAQItem[]>(merged.helpContent, []));
           setPrivacySections(safeParseJSON<ContentSection[]>(merged.privacyContent, []));
           setTermsSections(safeParseJSON<ContentSection[]>(merged.termsContent, []));
-          try {
-            const fs = JSON.parse(merged.flashSale || '{}');
-            if (fs && typeof fs === 'object') setFlashSale(fs);
-          } catch {}
-        }
+            try {
+              const fs = JSON.parse(merged.flashSale || '{}');
+              if (fs && typeof fs === 'object') setFlashSale(fs);
+            } catch {}
+            try {
+              const cats = JSON.parse(merged.categories || '[]');
+              if (Array.isArray(cats)) setCategories(cats);
+            } catch {}
+          }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -124,9 +131,8 @@ export default function BrandManagerPage() {
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (user) headers['Authorization'] = 'Bearer ' + (await user.getIdToken());
-      const payload = { ...settings, flashSale: JSON.stringify(flashSale) };
+      const payload = { ...settings, flashSale: JSON.stringify(flashSale), categories: JSON.stringify(categories) };
       delete (payload as any).features;
-      delete (payload as any).categories;
       const res = await fetch('/api/brand', {
         method: 'PUT',
         headers,
@@ -558,6 +564,52 @@ export default function BrandManagerPage() {
               <span className="text-sm font-medium text-gray-900">啟用商家入駐（顯示「開始銷售」及「商家入駐」按鈕）</span>
             </label>
             <p className="text-xs text-gray-400 mt-2 ml-7">關閉後，「開始銷售」、「商家入駐」、「開店當老闆」按鈕將不會顯示在前台頁面</p>
+          </Card>
+
+          <Card padding="md">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">商品分類</h2>
+              <button
+                onClick={() => setCategories(prev => [...prev, { name: '', icon: 'ShoppingBag' }])}
+                className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-500 text-white text-xs font-medium rounded-lg hover:bg-indigo-600 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> 新增分類
+              </button>
+            </div>
+            {categories.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">尚無分類，點擊上方按鈕新增</p>
+            ) : (
+              <div className="space-y-2">
+                {categories.map((cat, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <input
+                      value={cat.name}
+                      onChange={(e) => setCategories(prev => prev.map((c, i) => i === idx ? { ...c, name: e.target.value } : c))}
+                      placeholder="分類名稱"
+                      className="flex-1 px-3 py-1.5 rounded border border-gray-200 text-sm focus:outline-none focus:border-indigo-500"
+                    />
+                    <select
+                      value={cat.icon}
+                      onChange={(e) => setCategories(prev => prev.map((c, i) => i === idx ? { ...c, icon: e.target.value } : c))}
+                      className="px-2 py-1.5 rounded border border-gray-200 text-sm"
+                    >
+                      <option value="ShoppingBag">ShoppingBag</option>
+                      <option value="Zap">Zap</option>
+                      <option value="Heart">Heart</option>
+                      <option value="Sparkles">Sparkles</option>
+                      <option value="Dumbbell">Dumbbell</option>
+                      <option value="Apple">Apple</option>
+                    </select>
+                    <button
+                      onClick={() => setCategories(prev => prev.filter((_, i) => i !== idx))}
+                      className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <div className="flex gap-3">
